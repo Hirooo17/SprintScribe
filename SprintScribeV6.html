@@ -1,0 +1,2144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>SprintScribe V6.0</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+/* ══════════════════════════════════════════
+   TOKENS
+══════════════════════════════════════════ */
+:root{
+  --bg:#0b0c10;
+  --sb:#0e0f14;
+  --sb-border:#1a1b22;
+  --panel:#111318;
+  --card:#14161c;
+  --border:#1e2028;
+  --text:#e5e5e5;
+  --muted:#a0a5b8;
+  --label:#c8ccd9;
+  --accent:#e8000f;
+  --accent2:#ff3d3d;
+  --accent-dim:rgba(232,0,15,.12);
+  --accent-glow:rgba(232,0,15,.35);
+  --field:#0d0e13;
+  --field-border:#22242e;
+  --radius:9px;
+  --sidebar:255px;
+  --header:52px;
+  --font-head:'Bebas Neue',sans-serif;
+  --font:'Space Grotesk',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --ease:.17s cubic-bezier(.4,0,.2,1);
+  --modal-bg:rgba(0,0,0,.75);
+  --modal-overlay:rgba(10,11,16,.85);
+  --blue:#2f80ff;
+  --blue-glow:rgba(47,128,255,.45);
+  --blue-dim:rgba(47,128,255,.12);
+}
+[data-theme=light]{
+  --bg:#f2f3f7;
+  --sb:#ffffff;
+  --sb-border:#e4e6ef;
+  --panel:#ffffff;
+  --card:#f7f8fc;
+  --border:#e4e6ef;
+  --text:#0f1120;
+  --muted:#7c829e;
+  --label:#4d5270;
+  --field:#f7f8fc;
+  --field-border:#d8daea;
+  --accent:#e8000f;
+  --accent-dim:rgba(232,0,15,.08);
+  --accent-glow:rgba(232,0,15,.25);
+  --modal-bg:rgba(0,0,0,.45);
+  --modal-overlay:rgba(242,243,247,.9);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;width:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13.5px;display:flex;flex-direction:column}
+
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+
+/* ══════ HEADER ══════ */
+.hdr{
+  height:var(--header);flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--sb);border-bottom:1px solid var(--sb-border);
+  padding:0 12px 0 0;z-index:200;position:relative;
+}
+.hdr-brand{
+  display:flex;align-items:center;gap:10px;
+  padding:0 12px;height:100%;flex-shrink:0;
+}
+.hamburger{
+  width:36px;height:36px;border-radius:8px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  cursor:pointer;border:1px solid var(--field-border);background:var(--field);
+  transition:all .25s cubic-bezier(.4,0,.2,1);flex-shrink:0;position:relative;overflow:hidden;
+}
+.hamburger::before{content:'';position:absolute;inset:0;background:var(--accent);opacity:0;transition:opacity .25s;border-radius:7px}
+.hamburger:hover::before{opacity:1}
+.hamburger:hover .hb-line{background:#fff}
+.hamburger:hover{border-color:var(--accent);box-shadow:0 0 14px var(--accent-glow)}
+.hb-line{width:16px;height:2px;border-radius:2px;background:var(--muted);transition:all .3s cubic-bezier(.4,0,.2,1);transform-origin:center;position:relative;z-index:1}
+body.sb-hidden .hb-line:nth-child(1){transform:translateY(7px) rotate(45deg);background:var(--accent)}
+body.sb-hidden .hb-line:nth-child(2){opacity:0;transform:scaleX(0)}
+body.sb-hidden .hb-line:nth-child(3){transform:translateY(-7px) rotate(-45deg);background:var(--accent)}
+body.sb-hidden .hamburger{border-color:rgba(232,0,15,.4);background:var(--accent-dim)}
+
+.logo-mark{position:relative;width:32px;height:36px;flex-shrink:0;filter:drop-shadow(0 3px 8px rgba(232,0,15,.45))}
+.logo-mark svg{width:100%;height:100%}
+.logo-text{display:flex;flex-direction:column;line-height:1}
+.logo-text .l1{font-family:var(--font-head);font-size:1.3rem;letter-spacing:1.5px;background:linear-gradient(135deg,#fff 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+[data-theme=light] .logo-text .l1{background:linear-gradient(135deg,#0f1120 30%,var(--accent));-webkit-background-clip:text;background-clip:text}
+.logo-text .l2{font-size:.56rem;font-weight:600;letter-spacing:2.5px;color:var(--accent);text-transform:uppercase;margin-top:1px}
+.hdr-right{display:flex;align-items:center;gap:10px;flex-shrink:1;min-width:0}
+.tools-wrap{display:flex;align-items:center;gap:6px;min-width:0;flex-shrink:1}
+.tools-badge{font-size:.6rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(232,0,15,.3);border-radius:4px;padding:2px 6px;flex-shrink:0}
+.hdr select,.hdr-sel{padding:5px 8px;border-radius:var(--radius);border:1px solid var(--field-border);background:var(--field);color:var(--text);font-family:var(--font);font-size:12px;outline:none;cursor:pointer;min-width:140px;max-width:210px;transition:border-color var(--ease);flex-shrink:1}
+.hdr select:focus{border-color:var(--accent)}
+.hdr-nav-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;border:1px solid var(--field-border);background:var(--field);color:var(--text);font-weight:700;letter-spacing:.7px;cursor:pointer;transition:all .15s ease;flex-shrink:0}
+.hdr-nav-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);box-shadow:0 0 10px var(--accent-glow)}
+.hdr-nav-btn .mini-ico{font-size:12px}
+.quick-note-overlay{position:fixed;right:18px;top:120px;bottom:18px;width:min(360px,calc(100vw - 28px));z-index:1200;display:flex;align-items:stretch;justify-content:flex-end;pointer-events:none;opacity:0;transform:translateX(30px);transition:opacity .2s ease,transform .2s ease}
+.quick-note-overlay.open{opacity:1;pointer-events:auto;transform:translateX(0)}
+.quick-note-panel{width:100%;background:linear-gradient(180deg,var(--panel) 0%,var(--sb) 100%);border:1px solid var(--sb-border);border-radius:18px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 45px rgba(0,0,0,.38);border-left:3px solid var(--accent)}
+.quick-note-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg,rgba(255,255,255,.04),transparent)}
+.quick-note-title{font-family:var(--font-head);font-size:.82rem;letter-spacing:1.6px;color:var(--text);text-transform:uppercase}
+.quick-note-body{padding:12px 16px;background:rgba(255,255,255,.015);flex:1;display:flex}
+.quick-note-body textarea{width:100%;height:100%;resize:none;background:rgba(255,255,255,.04);border:1px solid var(--field-border);border-radius:12px;color:var(--text);padding:12px 14px;font-family:var(--mono);font-size:12.5px;line-height:1.7;outline:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.02)}
+.quick-note-body textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(232,0,15,.12)}
+.quick-note-footer{padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;background:rgba(255,255,255,.02)}
+.tog{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.tog-lbl{font-size:.68rem;color:var(--muted);font-weight:500;min-width:26px}
+.sw{position:relative;width:38px;height:20px;flex-shrink:0}
+.sw input{display:none}
+.sw-track{position:absolute;inset:0;background:var(--field);border:1px solid var(--field-border);border-radius:999px;cursor:pointer;transition:var(--ease)}
+.sw-track::before{content:'';position:absolute;width:14px;height:14px;top:2px;left:2px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent-glow);transition:var(--ease)}
+.sw input:checked+.sw-track::before{transform:translateX(18px)}
+.v-pill{font-size:.58rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;background:linear-gradient(135deg,var(--accent),#7a0008);color:#fff;padding:2px 7px;border-radius:4px;box-shadow:0 2px 8px var(--accent-glow);flex-shrink:0}
+
+/* ══════ LAYOUT ══════ */
+.app{display:flex;flex:1;overflow:hidden;height:calc(100vh - var(--header));position:relative}
+
+/* ══════ SIDEBAR (SPACIOUS & UNCLUSTERED) ══════ */
+.sb{
+  width:var(--sidebar);flex-shrink:0;
+  background:var(--sb);border-right:1px solid var(--sb-border);
+  display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;
+  padding:12px 10px 20px;gap:6px;
+  transition:width .25s cubic-bezier(.4,0,.2,1),padding .25s cubic-bezier(.4,0,.2,1),transform .25s ease,opacity .2s;
+  z-index:100;
+}
+body.sb-hidden .sb{width:0;padding:12px 0 20px;opacity:0;pointer-events:none}
+
+/* SIDEBAR BACKDROP (FOR MOBILE/HALF SCREEN) */
+.sb-backdrop{display:none;position:fixed;inset:0;top:var(--header);background:rgba(0,0,0,.6);backdrop-filter:blur(3px);z-index:90}
+
+/* COMPACT TOP WIDGETS */
+.sb-top-deck{
+  display:flex;flex-direction:column;gap:6px;
+  padding-bottom:8px;border-bottom:1px solid var(--sb-border);
+}
+.sb-datetime{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:6px 10px;border-radius:8px;background:var(--field);border:1px solid var(--field-border);
+}
+.sb-time{font-family:var(--mono);font-size:.92rem;font-weight:700;color:var(--blue)!important;text-shadow:0 0 8px var(--blue-glow)!important;letter-spacing:1px}
+.sb-date{font-size:.62rem;letter-spacing:1px;color:#6fa8ff!important;text-transform:uppercase}
+
+.sb-timer{
+  display:flex;flex-direction:column;gap:5px;
+  padding:8px 10px;border-radius:8px;background:var(--field);border:1px solid var(--field-border);
+}
+.sb-timer-top{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.sb-timer-mode{display:flex;gap:4px}
+.sb-timer-mode button{
+  font-size:.55rem;font-weight:700;letter-spacing:.8px;padding:3px 7px;border-radius:5px;
+  border:1px solid var(--field-border);background:var(--card);color:var(--muted);cursor:pointer;transition:.15s;
+}
+.sb-timer-mode button.on{background:var(--blue-dim)!important;color:var(--blue)!important;border-color:var(--blue)!important}
+.sb-timer-display{
+  font-family:var(--mono);font-size:.82rem;color:var(--blue)!important;
+  font-weight:700;letter-spacing:.5px;text-align:right;
+}
+.sb-timer-input-boxes{display:none;align-items:center;justify-content:center;gap:3px;margin:2px 0}
+.sb-timer-input-boxes .tb{width:30px;text-align:center;font-family:var(--mono);font-size:.7rem;padding:3px 0;border-radius:5px;border:1px solid var(--field-border);background:var(--card);color:var(--text)}
+.sb-timer-input-boxes .tb:focus{border-color:var(--accent);outline:none}
+.sb-timer-input-boxes span{font-family:var(--mono);color:var(--muted);font-size:.7rem}
+.sb-timer-btns{display:flex;gap:5px}
+.sb-timer-btns button{
+  flex:1;padding:4px 8px;font-size:.58rem;font-weight:700;letter-spacing:1px;
+  border-radius:5px;border:1px solid var(--field-border);background:var(--card);color:var(--muted);cursor:pointer;transition:.15s;
+}
+.sb-timer-btns button:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* COMPACT CALL COUNTER IN SIDEBAR */
+.sb-call-counter{
+  display:flex;flex-direction:column;gap:5px;
+  padding:7px 10px;border-radius:8px;background:var(--field);border:1px solid var(--field-border);
+}
+.sb-cc-top{display:flex;align-items:center;justify-content:space-between}
+.sb-cc-left{display:flex;align-items:center;gap:6px}
+.sb-cc-title{font-size:.62rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+.sb-cc-total{font-family:var(--mono);font-size:1.15rem;font-weight:700;color:var(--accent);text-shadow:0 0 8px var(--accent-glow)}
+.sb-end-shift-btn{
+  padding:3px 8px;border-radius:5px;border:1px solid rgba(232,0,15,.35);
+  background:var(--accent-dim);color:var(--accent);font-size:.58rem;font-weight:700;
+  cursor:pointer;transition:.15s;display:flex;align-items:center;gap:3px;
+}
+.sb-end-shift-btn:hover{background:var(--accent);color:#fff;box-shadow:0 0 8px var(--accent-glow)}
+.sb-cc-tags{display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end}
+.sb-cc-tag{font-size:.52rem;font-weight:700;padding:1px 5px;border-radius:3px;background:var(--card);color:var(--muted);border:1px solid var(--border)}
+.sb-cc-tag span{color:var(--text);font-family:var(--mono);margin-left:2px}
+
+/* SHIFT STATS BAR IN NOTE HISTORY PANEL */
+.shift-stats-bar{
+  display:flex;gap:8px;flex-wrap:wrap;padding:9px 18px;border-bottom:1px solid var(--border);
+  background:var(--card);align-items:center;
+}
+.ss-item{
+  font-size:.68rem;color:var(--muted);display:flex;align-items:center;gap:5px;
+  background:var(--field);padding:4px 9px;border-radius:5px;border:1px solid var(--border);
+}
+.ss-item strong{color:var(--accent);font-family:var(--mono);font-size:.82rem}
+
+/* BROWSE NOTES - BIGGER, WIDER, DISTINCT */
+.sb-label{
+  font-size:.68rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;
+  color:var(--accent);padding:10px 8px 4px;white-space:nowrap;overflow:hidden;
+}
+.nav{
+  display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:9px;cursor:pointer;
+  color:var(--muted);font-size:13.5px;font-weight:600;border:1px solid transparent;position:relative;
+  transition:all .15s ease;user-select:none;white-space:nowrap;overflow:hidden;background:transparent;
+}
+.nav:hover{background:var(--accent-dim);color:var(--text);transform:translateX(2px)}
+.nav.on{background:var(--accent-dim);color:var(--text);border-color:rgba(232,0,15,.35);box-shadow:0 0 10px rgba(232,0,15,.15)}
+.nav.on::before{content:'';position:absolute;left:0;top:15%;bottom:15%;width:4px;background:var(--accent);border-radius:0 4px 4px 0}
+.nav-ico{
+  width:34px;height:34px;border-radius:8px;background:var(--card);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;
+  transition:all var(--ease);
+}
+.nav.on .nav-ico{background:var(--accent);border-color:var(--accent);box-shadow:0 2px 8px var(--accent-glow)}
+.nav-txt{flex:1;line-height:1.25}
+.nav-txt small{display:block;font-size:.68rem;font-weight:500;color:var(--muted);margin-top:2px}
+.nav.on .nav-txt small{color:rgba(255,255,255,.65)}
+[data-theme=light] .nav.on .nav-txt small{color:rgba(232,0,15,.7)}
+
+/* ══════ MAIN ══════ */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.panel{display:none;flex-direction:column;flex:1;overflow:hidden;min-height:0}
+.panel.on{display:flex}
+.ptop{
+  flex-shrink:0;padding:10px 18px;border-bottom:1px solid var(--border);
+  background:var(--panel);display:flex;align-items:center;justify-content:space-between;gap:10px;
+}
+.ptop-left{display:flex;align-items:center;gap:10px}
+.ptop-title{font-family:var(--font-head);font-size:1.25rem;letter-spacing:1.5px;color:var(--text)}
+.ptop-badge{
+  padding:2px 9px;border-radius:4px;font-size:.6rem;font-weight:700;
+  letter-spacing:1.5px;text-transform:uppercase;background:var(--accent-dim);
+  border:1px solid rgba(232,0,15,.3);color:var(--accent);
+}
+
+/* RESPONSIVE PANE SWITCH BAR (FOR HALF/QUARTER SCREEN) */
+.view-switch{
+  display:none;align-items:center;gap:4px;background:var(--field);
+  padding:3px;border-radius:7px;border:1px solid var(--field-border);
+}
+.view-btn{
+  padding:4px 10px;border-radius:5px;border:none;background:transparent;
+  color:var(--muted);font-size:.68rem;font-weight:700;letter-spacing:.8px;cursor:pointer;transition:.15s;
+}
+.view-btn.on{background:var(--accent);color:#fff;box-shadow:0 0 8px var(--accent-glow)}
+
+/* ══════ SPLIT (FLEXIBLE & RESPONSIVE) ══════ */
+.split{display:grid;grid-template-columns:1fr 370px;flex:1;overflow:hidden;min-height:0;gap:0}
+.fp{padding:16px 20px;overflow-y:auto;height:100%;scroll-behavior:smooth}
+.fg{display:grid;grid-template-columns:repeat(12,1fr);gap:10px;align-items:start}
+.c3{grid-column:span 3}.c4{grid-column:span 4}.c5{grid-column:span 5}
+.c6{grid-column:span 6}.c7{grid-column:span 7}.c8{grid-column:span 8}.c12{grid-column:span 12}
+
+.fsec{grid-column:span 12;display:flex;align-items:center;gap:8px;margin:6px 0 0}
+.fsec-t{font-family:var(--font-head);font-size:.8rem;letter-spacing:2px;color:var(--accent);white-space:nowrap}
+.fsec-l{flex:1;height:1px;background:linear-gradient(to right,rgba(232,0,15,.35),transparent)}
+.fld{display:flex;flex-direction:column;gap:4px;position:relative}
+.flbl{font-size:.66rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--label)}
+
+input[type=text],input[type=email],input[type=tel],input[type=number],select,textarea{
+  width:100%;padding:10px 13px;border-radius:var(--radius);border:1px solid var(--field-border);
+  background:var(--field);color:var(--text);font-family:var(--font);font-size:13.5px;outline:none;
+  transition:border-color var(--ease),box-shadow var(--ease);
+}
+input[type=text],input[type=email],input[type=tel],input[type=number],select{
+  min-height:40px;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(232,0,15,.12)}
+textarea{resize:vertical;min-height:75px}
+select{cursor:pointer}
+select option{background:var(--field);color:var(--text)}
+
+/* WIDE WOCAS & REMARKS */
+textarea.wide-remarks{min-height:155px;font-size:13.5px;padding:14px 16px;line-height:1.6}
+input.wide-wocas{padding:12px 16px;font-size:14px;min-height:45px;font-weight:600}
+textarea.wide-wocas{padding:12px 16px;font-size:14px;min-height:92px;font-weight:600;line-height:1.5;resize:vertical}
+.field-hint{font-size:.62rem;color:var(--muted);margin-top:3px;font-style:italic}
+
+/* ══════ SPOKE TO TOP HIGHLIGHT ══════ */
+.spoke-top{
+  grid-column:span 12;display:flex;align-items:center;gap:10px;
+  padding:10px 14px;border-radius:10px;background:var(--accent-dim);
+  border:1px solid rgba(232,0,15,.35);margin-bottom:2px;
+}
+.spoke-top .flbl{color:var(--accent);white-space:nowrap;margin:0}
+.spoke-top input{background:var(--field)}
+
+/* ══════ OUTPUT PANE ══════ */
+.op{border-left:1px solid var(--border);background:var(--card);display:flex;flex-direction:column;height:100%;overflow:hidden}
+.op-hdr{flex-shrink:0;padding:12px 16px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.op-hdr-t{font-size:.64rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+.btn-expand{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;border:1px solid var(--field-border);background:var(--field);color:var(--muted);font-size:.65rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;transition:all .2s cubic-bezier(.4,0,.2,1)}
+.btn-expand:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);box-shadow:0 0 10px var(--accent-glow)}
+.btn-expand svg{width:13px;height:13px}
+.op-body{flex:1;overflow-y:auto;padding:14px 16px}
+.op-pre{font-family:var(--mono);font-size:11.5px;line-height:1.8;color:var(--text);white-space:pre-wrap;word-break:break-word;padding:12px;border-radius:6px;cursor:text;transition:all var(--ease)}
+.op-pre.ph{color:var(--muted);font-style:italic;cursor:default}
+.op-pre.editable{background:var(--field)!important;border:2px solid var(--accent);box-shadow:0 0 0 3px var(--accent-dim);cursor:text;color:var(--text)!important;min-height:120px}
+.op-pre:focus{outline:none;box-shadow:0 0 0 3px var(--accent-glow)}
+.op-footer{flex-shrink:0;padding:12px 16px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
+.btn-row{display:flex;gap:7px;flex-wrap:wrap}
+.btn-gen{padding:8px 18px;border-radius:var(--radius);border:none;background:var(--accent);color:#fff;font-family:var(--font-head);font-size:1rem;letter-spacing:2px;cursor:pointer;transition:var(--ease);box-shadow:0 2px 14px var(--accent-glow);display:flex;align-items:center;gap:6px}
+.btn-gen:hover{background:var(--accent2);transform:translateY(-1px);box-shadow:0 4px 20px var(--accent-glow)}
+.btn-gen:active{transform:translateY(0)}
+.btn-ghost{padding:8px 14px;border-radius:var(--radius);border:1px solid var(--field-border);background:transparent;color:var(--text);font-family:var(--font);font-size:12.5px;font-weight:500;cursor:pointer;transition:var(--ease)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.foot-meta{display:flex;align-items:center;justify-content:space-between}
+.stamp{font-size:.67rem;font-weight:700;color:var(--accent);height:14px;letter-spacing:.5px}
+.hint{display:flex;align-items:center;gap:3px;font-size:.62rem;color:var(--muted)}
+.key{padding:1px 5px;border-radius:4px;border:1px solid var(--field-border);background:var(--field);font-size:.6rem;font-family:var(--mono);color:var(--muted)}
+
+/* ══════ MODAL ══════ */
+.modal-overlay{position:fixed;inset:0;z-index:9999;background:var(--modal-bg);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .3s cubic-bezier(.4,0,.2,1)}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal-overlay.open .modal-box{transform:scale(1) translateY(0);opacity:1}
+.modal-box{width:100%;max-width:760px;max-height:92vh;background:var(--sb);border:1px solid var(--sb-border);border-radius:16px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.6),0 0 0 1px rgba(232,0,15,.12);transform:scale(.93) translateY(20px);opacity:0;transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .3s cubic-bezier(.4,0,.2,1)}
+[data-theme=light] .modal-box{box-shadow:0 32px 80px rgba(0,0,0,.18),0 0 0 1px rgba(232,0,15,.1)}
+.modal-hdr{flex-shrink:0;padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--panel)}
+.modal-hdr-left{display:flex;align-items:center;gap:10px}
+.modal-icon{width:32px;height:32px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px var(--accent-glow)}
+.modal-icon svg{width:16px;height:16px;fill:#fff}
+.modal-title{font-family:var(--font-head);font-size:1.1rem;letter-spacing:2px;color:var(--text)}
+.modal-badge{font-size:.58rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(232,0,15,.3);border-radius:4px;padding:2px 7px}
+.modal-close{width:34px;height:34px;border-radius:8px;border:1px solid var(--field-border);background:var(--field);color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;flex-shrink:0}
+.modal-close:hover{border-color:var(--accent);color:#fff;background:var(--accent);box-shadow:0 0 12px var(--accent-glow)}
+.modal-body{flex:1;overflow-y:auto;padding:16px;min-height:180px;background:var(--bg)}
+.modal-pre{font-family:var(--mono);font-size:12px;line-height:1.8;color:var(--text);white-space:pre-wrap;word-break:break-word;background:var(--field);border:1px solid var(--field-border);border-radius:10px;padding:14px;min-height:160px;outline:none}
+.modal-pre:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(232,0,15,.1)}
+.modal-pre.ph{color:var(--muted);font-style:italic}
+.modal-footer{flex-shrink:0;padding:12px 18px;border-top:1px solid var(--border);background:var(--panel);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.modal-footer-left{display:flex;gap:8px;flex-wrap:wrap}
+.modal-stamp{font-size:.67rem;font-weight:700;color:var(--accent);letter-spacing:.5px}
+@keyframes copyPop{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
+.btn-copy-modal.copied{animation:copyPop .3s ease}
+@keyframes modalShake{0%,100%{transform:scale(.93) translateY(0)}20%{transform:scale(.95) translateY(-3px)}40%{transform:scale(.94) translateY(3px)}60%{transform:scale(.95) translateY(-2px)}80%{transform:scale(.94) translateY(2px)}}
+.modal-box.shake{animation:modalShake .45s cubic-bezier(.36,.07,.19,.97) forwards}
+.modal-box::before{content:'';display:block;height:3px;background:linear-gradient(90deg,var(--accent),rgba(232,0,15,.3),transparent);flex-shrink:0}
+
+/* ═══ UPSELL VALIDATION ═══ */
+.upsell-error{display:none;align-items:center;gap:7px;padding:9px 13px;border-radius:8px;background:rgba(232,0,15,.12);border:1px solid rgba(232,0,15,.45);color:var(--accent);font-size:.72rem;font-weight:700;letter-spacing:.5px;margin-bottom:4px;grid-column:span 12;animation:upsellShake .4s cubic-bezier(.36,.07,.19,.97)}
+.upsell-error.show{display:flex}
+.upsell-error svg{flex-shrink:0;width:15px;height:15px}
+select.upsell-missing{border-color:var(--accent)!important;box-shadow:0 0 0 3px rgba(232,0,15,.18)!important;animation:upsellShake .4s cubic-bezier(.36,.07,.19,.97)}
+@keyframes upsellShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+
+/* ══════════════════════════════════════════
+   SEARCHABLE DROPDOWN
+══════════════════════════════════════════ */
+.sd-wrap{position:relative;width:100%}
+.sd-wrap select{position:absolute;opacity:0;pointer-events:none;width:0;height:0}
+.sd-display{
+  width:100%;padding:10px 32px 10px 13px;min-height:40px;border-radius:var(--radius);border:1px solid var(--field-border);
+  background:var(--field);color:var(--text);font-family:var(--font);font-size:13.5px;cursor:pointer;
+  transition:border-color var(--ease),box-shadow var(--ease);white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;position:relative;user-select:none;display:flex;align-items:center;
+}
+.sd-display::after{content:'▾';position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--muted);pointer-events:none}
+.sd-display:hover{border-color:var(--accent)}
+.sd-display.open{border-color:var(--accent);box-shadow:0 0 0 3px rgba(232,0,15,.12)}
+.sd-display.ph{color:var(--muted)}
+.sd-panel{
+  position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:600;
+  background:var(--sb);border:1px solid var(--sb-border);border-radius:10px;
+  box-shadow:0 12px 40px rgba(0,0,0,.6);display:none;flex-direction:column;
+  max-height:280px;overflow:hidden;animation:sdSlideIn .15s ease;
+}
+.sd-panel.open{display:flex}
+@keyframes sdSlideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.sd-search{padding:10px 12px;border:none;border-bottom:1px solid var(--border);background:var(--field);color:var(--text);font-family:var(--font);font-size:13px;outline:none}
+.sd-search::placeholder{color:var(--muted);font-style:italic}
+.sd-list{overflow-y:auto;flex:1;padding:4px}
+.sd-opt{padding:7px 11px;border-radius:6px;cursor:pointer;font-size:12.5px;color:var(--text);transition:background .1s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sd-opt:hover,.sd-opt.hi{background:var(--accent-dim);color:var(--accent)}
+.sd-opt.sel{background:var(--accent);color:#fff;font-weight:600}
+.sd-opt.hidden{display:none}
+.sd-empty{padding:12px;text-align:center;color:var(--muted);font-size:.72rem;font-style:italic}
+
+/* ══════════════════════════════════════════
+   NOTEPAD + AHT (EDITABLE TITLE & SPLIT)
+══════════════════════════════════════════ */
+.notepad-split{display:grid;grid-template-columns:1fr 340px;flex:1;overflow:hidden;min-height:0;gap:0}
+.notepad-left{display:flex;flex-direction:column;padding:16px 20px;gap:10px;overflow:hidden}
+
+/* SHEET TABS */
+.sheet-tabs{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.sheet-tab{
+  padding:8px 16px;border-radius:8px;border:1px solid var(--field-border);background:var(--field);
+  color:var(--muted);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;
+  transition:all .15s;user-select:none;display:flex;align-items:center;gap:6px;
+  max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.sheet-tab:hover{border-color:var(--accent);color:var(--text)}
+.sheet-tab.on{background:var(--accent-dim);border-color:rgba(232,0,15,.5);color:var(--accent);box-shadow:0 0 8px var(--accent-glow)}
+.sheet-tab-txt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sheet-tab-ren{font-size:11px;opacity:0.6;transition:.15s;padding:1px 3px;border-radius:3px}
+.sheet-tab-ren:hover{opacity:1;background:rgba(255,255,255,.15);color:#fff}
+.sheet-tab-add{
+  padding:8px 12px;border-radius:8px;border:1px dashed var(--field-border);
+  background:transparent;color:var(--muted);font-size:15px;font-weight:700;
+  cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;
+}
+.sheet-tab-add:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* PROMINENT EDITABLE SHEET TITLE BAR */
+.sheet-title-edit-bar{
+  display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;
+  background:var(--card);border:1px solid var(--border);
+}
+.st-lbl{font-size:.68rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.st-input{
+  flex:1;padding:8px 12px;min-height:38px;border-radius:6px;border:1px solid transparent;background:var(--field);
+  color:var(--text);font-family:var(--font);font-size:13.5px;font-weight:600;outline:none;transition:.2s;
+}
+.st-input:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-dim)}
+.st-hint{font-size:.64rem;color:var(--muted);white-space:nowrap}
+
+/* AHT TRACKER */
+.aht-panel{border-left:1px solid var(--border);background:var(--card);display:flex;flex-direction:column;overflow:hidden}
+.aht-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.aht-header-title{font-family:var(--font-head);font-size:.9rem;letter-spacing:2px;color:var(--text)}
+.aht-header-badge{font-size:.55rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue);background:var(--blue-dim);border:1px solid rgba(47,128,255,.3);border-radius:4px;padding:2px 7px}
+.aht-avg{padding:12px 16px;border-bottom:1px solid var(--border);text-align:center}
+.aht-avg-label{font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.aht-avg-value{font-family:var(--mono);font-size:1.6rem;color:var(--blue);text-shadow:0 0 12px var(--blue-glow)}
+.aht-avg-sub{font-size:.62rem;color:var(--muted);margin-top:2px}
+.aht-input-row{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;gap:6px;align-items:flex-end}
+.aht-input-col{display:flex;flex-direction:column;gap:4px;flex:1}
+.aht-input-col label{font-size:.62rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--label)}
+.aht-input-col input{padding:8px 10px;font-size:13px;min-height:38px}
+.aht-add-btn{padding:7px 12px;border-radius:var(--radius);border:none;background:var(--blue);color:#fff;font-family:var(--font-head);font-size:.85rem;letter-spacing:1.5px;cursor:pointer;transition:var(--ease);box-shadow:0 2px 10px var(--blue-glow);white-space:nowrap;align-self:flex-end}
+.aht-add-btn:hover{background:#4a96ff;transform:translateY(-1px)}
+.aht-entries{flex:1;overflow-y:auto;padding:8px 10px}
+.aht-entry{display:grid;grid-template-columns:26px 52px 1fr 28px;gap:6px;align-items:center;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--field);margin-bottom:4px;font-size:11.5px}
+.aht-entry-num{font-family:var(--mono);color:var(--muted);font-size:.65rem;font-weight:700}
+.aht-entry-dur{font-family:var(--mono);color:var(--blue);font-weight:600}
+.aht-entry-rem{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.7rem}
+.aht-entry-del{width:22px;height:22px;border-radius:5px;border:1px solid var(--field-border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;transition:.15s}
+.aht-entry-del:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.aht-footer{padding:8px 14px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.aht-clear-btn{padding:4px 10px;border-radius:5px;border:1px solid var(--field-border);background:transparent;color:var(--muted);font-size:.62rem;font-weight:600;cursor:pointer;transition:.15s}
+.aht-clear-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ══════════════════════════════════════════
+   DEDICATED QUICK SNIPPETS PANEL (P8)
+══════════════════════════════════════════ */
+.snippets-page{display:flex;flex-direction:column;flex:1;overflow:hidden;padding:16px 20px;gap:12px}
+.snippets-top-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.snippets-search{flex:1;min-width:200px}
+.snippets-categories{display:flex;gap:5px;flex-wrap:wrap}
+.cat-chip{
+  padding:5px 12px;border-radius:6px;border:1px solid var(--field-border);background:var(--field);
+  color:var(--muted);font-size:.7rem;font-weight:600;cursor:pointer;transition:.15s;
+}
+.cat-chip:hover{border-color:var(--accent);color:var(--text)}
+.cat-chip.on{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+
+.snippets-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;overflow-y:auto;flex:1;padding-right:4px}
+.snippet-card{
+  display:flex;flex-direction:column;justify-content:space-between;padding:12px 14px;border-radius:9px;
+  background:var(--card);border:1px solid var(--border);gap:8px;transition:all .15s ease;
+}
+.snippet-card:hover{border-color:rgba(232,0,15,.4);transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.sc-top{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.sc-cat{font-size:.55rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--blue);background:var(--blue-dim);padding:2px 6px;border-radius:4px}
+.sc-del{color:var(--muted);font-size:11px;cursor:pointer;padding:2px 4px;border-radius:4px;transition:.15s}
+.sc-del:hover{color:var(--accent);background:var(--accent-dim)}
+.sc-text{font-size:12.5px;color:var(--text);line-height:1.5;word-break:break-word}
+.sc-btn{
+  padding:6px 12px;border-radius:6px;border:1px solid var(--field-border);background:var(--field);
+  color:var(--text);font-family:var(--font);font-size:.72rem;font-weight:700;cursor:pointer;
+  transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.sc-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.sc-btn.copied{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+.snippet-add-card{
+  display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-radius:9px;
+  background:var(--field);border:1px dashed var(--field-border);
+}
+.sac-row{display:flex;gap:8px}
+
+/* ══════════════════════════════════════════
+   NOTE HISTORY PANEL (P7)
+══════════════════════════════════════════ */
+.history-search{padding:12px 20px;border-bottom:1px solid var(--border)}
+.history-list{flex:1;overflow-y:auto;padding:12px 20px}
+.history-item{padding:12px 14px;border-radius:8px;border:1px solid var(--border);background:var(--field);margin-bottom:8px;cursor:pointer;transition:.2s}
+.history-item:hover{border-color:var(--accent);background:var(--accent-dim)}
+.history-item-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.history-item-badge{font-size:.58rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(232,0,15,.3);border-radius:3px;padding:2px 7px}
+.history-item-time{font-size:.62rem;color:var(--muted);font-family:var(--mono)}
+.history-item-preview{font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--mono)}
+.history-item-actions{display:flex;gap:6px;margin-top:8px}
+.history-item-actions button{padding:4px 10px;border-radius:5px;border:1px solid var(--field-border);background:var(--card);color:var(--text);font-size:.62rem;font-weight:600;cursor:pointer;transition:.15s}
+.history-item-actions button:hover{border-color:var(--accent);color:var(--accent)}
+.history-empty{padding:40px 20px;text-align:center;color:var(--muted);font-size:.75rem;font-style:italic}
+
+/* ══════════════════════════════════════════
+   KEYBOARD SHORTCUTS & FOCUS MODE
+══════════════════════════════════════════ */
+.kb-float{position:fixed;bottom:20px;right:20px;z-index:300;width:38px;height:38px;border-radius:50%;background:var(--accent);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;box-shadow:0 4px 16px var(--accent-glow);transition:all .2s}
+.kb-float:hover{transform:scale(1.1);box-shadow:0 6px 24px var(--accent-glow)}
+.kb-modal{position:fixed;inset:0;z-index:10000;background:var(--modal-bg);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s}
+.kb-modal.open{opacity:1;pointer-events:all}
+.kb-modal-box{background:var(--sb);border:1px solid var(--sb-border);border-radius:14px;padding:20px;max-width:440px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.kb-modal-title{font-family:var(--font-head);font-size:1.1rem;letter-spacing:2px;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.kb-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)}
+.kb-row:last-child{border-bottom:none}
+.kb-row-label{font-size:.75rem;color:var(--text)}
+.kb-row-keys{display:flex;gap:4px}
+.kb-key{padding:2px 7px;border-radius:4px;border:1px solid var(--field-border);background:var(--field);font-family:var(--mono);font-size:.62rem;font-weight:600;color:var(--muted)}
+
+body.focus-mode .hdr{display:none}
+body.focus-mode .sb{display:none}
+body.focus-mode .app{height:100vh}
+body.focus-mode .kb-float{display:none}
+.focus-exit{position:fixed;top:10px;right:10px;z-index:400;padding:5px 12px;border-radius:7px;border:1px solid var(--accent);background:var(--accent);color:#fff;font-family:var(--font-head);font-size:.78rem;letter-spacing:1.5px;cursor:pointer;box-shadow:0 2px 14px var(--accent-glow);display:none;transition:.2s}
+body.focus-mode .focus-exit{display:flex}
+.focus-exit:hover{background:var(--accent2)}
+
+.autofill-spoke{display:none;padding:2px 7px;border-radius:4px;border:1px solid rgba(47,128,255,.4);background:var(--blue-dim);color:var(--blue);font-size:.58rem;font-weight:700;cursor:pointer;transition:.15s;margin-top:2px;white-space:nowrap}
+.autofill-spoke:hover{background:rgba(47,128,255,.25)}
+.autofill-spoke.show{display:inline-block}
+
+/* ══════════════════════════════════════════
+   HIGH-EFFICIENCY RESPONSIVE RULES
+   (HALF SCREEN & 1/4 SCREEN FUNCTIONALITY)
+══════════════════════════════════════════ */
+@media(max-width:960px){
+  /* SIDEBAR BECOMES FLOATING DRAWER */
+  .sb{
+    position:fixed;top:var(--header);left:0;bottom:0;z-index:900;
+    width:var(--sidebar);box-shadow:10px 0 40px rgba(0,0,0,.6);
+  }
+  body.sb-hidden .sb{transform:translateX(-100%);width:var(--sidebar)}
+  body:not(.sb-hidden) .sb-backdrop{display:block}
+
+  /* SPLIT LAYOUT STACKS OR TABS CLEANLY */
+  .split{display:flex;flex-direction:column;overflow-y:auto;height:100%}
+  .fp{padding:14px 14px 20px;overflow-y:visible;height:auto;flex-shrink:0}
+  .op{min-height:420px;border-left:none;border-top:2px solid var(--border);flex-shrink:0}
+
+  /* SHOW PANE SWITCH BAR */
+  .view-switch{display:flex}
+
+  /* NOTEPAD SPLIT */
+  .notepad-split{display:flex;flex-direction:column;overflow-y:auto;height:100%}
+  .notepad-left{min-height:380px;padding:14px 14px;flex-shrink:0}
+  .aht-panel{min-height:360px;border-left:none;border-top:2px solid var(--border);flex-shrink:0}
+}
+
+@media(max-width:650px){
+  /* ALL FORM COLUMNS BECOME FULL WIDTH */
+  .c3,.c4,.c5,.c6,.c7,.c8,.c12{grid-column:span 12}
+  .fg{gap:8px}
+
+  /* HEADER COMPACTNESS (NO OVERFLOW AT 350-400px) */
+  .hdr{padding:0 8px}
+  .hdr-brand{padding:0 6px;gap:6px}
+  .logo-text .l2{display:none}
+  .logo-text .l1{font-size:1.15rem}
+  .tools-badge{display:none}
+  .hdr select,.hdr-sel{min-width:110px;max-width:140px;font-size:11px;padding:4px 6px}
+  .v-pill{display:none}
+  #focusModeBtn{display:none}
+  .tog-lbl{display:none}
+
+  /* TIGHT PADDING */
+  .fp{padding:10px 10px 20px}
+  .ptop{padding:8px 12px}
+  .ptop-title{font-size:1.1rem}
+  .snippets-page{padding:10px 12px}
+  .history-search{padding:10px 12px}
+  .history-list{padding:10px 12px}
+}
+</style>
+</head>
+<body class="sb-hidden">
+
+<!-- SIDEBAR OVERLAY BACKDROP -->
+<div class="sb-backdrop" id="sbBackdrop"></div>
+
+<!-- ══════ HEADER ══════ -->
+<header class="hdr">
+  <div class="hdr-brand">
+    <div class="hamburger" id="hamburgerBtn" title="Toggle Sidebar">
+      <span class="hb-line"></span><span class="hb-line"></span><span class="hb-line"></span>
+    </div>
+    <div class="logo-mark">
+      <svg viewBox="0 0 40 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 2.5 L37.5 9.5 L37.5 24 Q37.5 35.5 20 41.5 Q2.5 35.5 2.5 24 L2.5 9.5 Z" fill="#9b0009" opacity="0.4" transform="translate(0,1.5)"/>
+        <path d="M20 2.5 L37.5 9.5 L37.5 24 Q37.5 35.5 20 41.5 Q2.5 35.5 2.5 24 L2.5 9.5 Z" fill="#e8000f"/>
+        <path d="M20 5.5 L34.5 11.5 L34.5 24 Q34.5 33.5 20 38.5 Q5.5 33.5 5.5 24 L5.5 11.5 Z" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+        <path d="M20 5.5 L34.5 11.5 L34.5 17 Q27 14 20 14 Q13 14 5.5 17 L5.5 11.5 Z" fill="rgba(255,255,255,0.08)"/>
+        <path d="M15 14.5 Q10 14.5 10 19.5 Q10 24.5 20 26.5 Q30 28.5 30 33.5 Q30 38.5 23 38.5" fill="none" stroke="white" stroke-width="4.5" stroke-linecap="round"/>
+        <polygon points="30,7 26,13 29,13 25,19" fill="rgba(255,255,255,0.75)"/>
+        <path d="M17.5 40.5 L20 43 L22.5 40.5" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.2" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="logo-text">
+      <span class="l1">SPRINTSCRIBE</span>
+      <span class="l2">Notes Suite</span>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <button class="btn-ghost" id="focusModeBtn" title="Focus Mode (F11)" style="padding:4px 8px;font-size:.65rem;font-weight:700">🎯 FOCUS</button>
+    <span class="v-pill">V6.0</span>
+    <div class="tools-wrap">
+      <span class="tools-badge">Tools</span>
+      <select id="toolsSel">
+        <option value="">— Open a Tool —</option>
+        <option value="https://d7f000000zntyuaq.lightning.force.com">Salesforce / ESA</option>
+        <option value="https://pldt365.sharepoint.com/sites/LIT365">LIT365</option>
+        <option value="https://prod-smartcloud.intra.smart/fuse/index.php">FUSE</option>
+        <option value="https://bsmp.pldt.pldtgroup.net:8443/expresse/login-page">Clearview</option>
+        <option value="https://10.111.27.164/">DMS</option>
+        <option value="http://easydocshome/login.aspx">EasyDocs</option>
+        <option value="https://infocomtechph.sharepoint.com/sites/learningsocmed">Learning SharePoint</option>
+        <option value="https://pldtcsprod.crm5.dynamics.com/">CEP</option>
+      </select>
+    </div>
+    <button class="hdr-nav-btn" id="topNotepadBtn" type="button" title="Open Notepad"><span class="mini-ico">📝</span> Notepad</button>
+    <div class="tog">
+      <span class="tog-lbl" id="tLbl">Dark</span>
+      <label class="sw"><input type="checkbox" id="tSw"/><span class="sw-track"></span></label>
+    </div>
+  </div>
+</header>
+
+<!-- ══════ MODAL ══════ -->
+<div class="modal-overlay" id="outputModal" role="dialog" aria-modal="true">
+  <div class="modal-box" id="modalBox">
+    <div class="modal-hdr">
+      <div class="modal-hdr-left">
+        <div class="modal-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 20V4h5v7h7v9H6z"/></svg></div>
+        <span class="modal-title">GENERATED OUTPUT</span>
+        <span class="modal-badge" id="modalBadge">Note</span>
+      </div>
+      <button class="modal-close" id="modalCloseBtn" title="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body"><pre class="modal-pre" id="modalPre" contenteditable="true" spellcheck="false"></pre></div>
+    <div class="modal-footer">
+      <div class="modal-footer-left">
+        <button class="btn-gen" id="modalCopyBtn" style="font-size:.85rem;padding:7px 16px;letter-spacing:1.5px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          COPY
+        </button>
+        <button class="btn-ghost" id="modalClearBtn">Clear Fields</button>
+      </div>
+      <span class="modal-stamp" id="modalStamp"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ KEYBOARD SHORTCUTS MODAL ══════ -->
+<div class="kb-modal" id="kbModal">
+  <div class="kb-modal-box">
+    <div class="kb-modal-title">⌨️ KEYBOARD SHORTCUTS</div>
+    <div class="kb-row"><span class="kb-row-label">Next Input / Select</span><div class="kb-row-keys"><span class="kb-key">Enter</span></div></div>
+    <div class="kb-row"><span class="kb-row-label">New Line in Remarks</span><div class="kb-row-keys"><span class="kb-key">Shift</span><span class="kb-key">Enter</span></div></div>
+    <div class="kb-row"><span class="kb-row-label">Generate Note</span><div class="kb-row-keys"><span class="kb-key">Ctrl</span><span class="kb-key">G</span></div></div>
+    <div class="kb-row"><span class="kb-row-label">Expand Output</span><div class="kb-row-keys"><span class="kb-key">Ctrl</span><span class="kb-key">E</span></div></div>
+    <div class="kb-row"><span class="kb-row-label">Copy Output</span><div class="kb-row-keys"><span class="kb-key">Ctrl</span><span class="kb-key">Shift</span><span class="kb-key">C</span></div></div>
+    <div class="kb-row"><span class="kb-row-label">Tech Notes</span><div class="kb-row-keys"><span class="kb-key">Ctrl</span><span class="kb-key">1</span></div></div>
+    <div class="kb-row"><span class="kb-row-label">Non-Tech Notes</span><div class="kb-row-keys"><span class="kb-key">Ctrl</span><span class="kb-key">2</span></div></div>
+    <div class="kb-row"><span class="kb-row-label">Reconnection</span><div class="kb-row-keys"><span class="kb-key">Ctrl</span><span class="kb-key">3</span></div></div>
+    <div class="kb-row"><span class="kb-row-label">Follow Up</span><div class="kb-row-keys"><span class="kb-key">Ctrl</span><span class="kb-key">4</span></div></div>
+    <div class="kb-row"><span class="kb-row-label">Rebate Ordertake</span><div class="kb-row-keys"><span class="kb-key">Ctrl</span><span class="kb-key">5</span></div></div>
+    <div class="kb-row"><span class="kb-row-label">Notepad</span><div class="kb-row-keys"><span class="kb-key">Ctrl</span><span class="kb-key">6</span></div></div>
+    <div class="kb-row"><span class="kb-row-label">Quick Snippets</span><div class="kb-row-keys"><span class="kb-key">Ctrl</span><span class="kb-key">8</span></div></div>
+    <div class="kb-row"><span class="kb-row-label">History</span><div class="kb-row-keys"><span class="kb-key">Ctrl</span><span class="kb-key">7</span></div></div>
+    <div class="kb-row"><span class="kb-row-label">Focus Mode</span><div class="kb-row-keys"><span class="kb-key">F11</span></div></div>
+    <div class="kb-row"><span class="kb-row-label">Close Modal / Exit</span><div class="kb-row-keys"><span class="kb-key">Esc</span></div></div>
+    <div style="text-align:center;margin-top:14px"><button class="btn-ghost" onclick="document.getElementById('kbModal').classList.remove('open')">Close</button></div>
+  </div>
+</div>
+
+<button class="focus-exit" id="focusExitBtn">✕ EXIT FOCUS</button>
+<button class="kb-float" id="kbFloatBtn" title="Keyboard Shortcuts">?</button>
+
+<div class="quick-note-overlay" id="quickNoteOverlay" aria-modal="true" role="dialog">
+  <div class="quick-note-panel">
+    <div class="quick-note-header">
+      <div class="quick-note-title">TEMPORARY NOTE</div>
+      <button class="modal-close" id="quickNoteClose" title="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="quick-note-body">
+      <textarea id="quickNoteText" placeholder="Type a quick note here..."></textarea>
+    </div>
+    <div class="quick-note-footer">
+      <button class="btn-ghost" id="quickNoteOpenReal">Open Notepad</button>
+      <button class="btn-gen" id="quickNoteCloseBtn">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ APP ══════ -->
+<div class="app">
+  <!-- SIDEBAR (WIDER, SPACIOUS, UNCLUSTERED) -->
+  <nav class="sb" id="appSidebar">
+
+    <!-- COMPACT TOP DECK -->
+    <div class="sb-top-deck">
+      <!-- LIVE DATE & TIME -->
+      <div class="sb-datetime">
+        <div class="sb-time" id="sbTime">--:--:--</div>
+        <div class="sb-date" id="sbDate">---</div>
+      </div>
+
+      <!-- COMPACT TIMER -->
+      <div class="sb-timer">
+        <div class="sb-timer-top">
+          <div class="sb-timer-mode">
+            <button id="sbModeSW" class="on">SW</button>
+            <button id="sbModeTM">TIMER</button>
+          </div>
+          <div class="sb-timer-display" id="sbTimer">00:00:00.00</div>
+        </div>
+        <div class="sb-timer-input-boxes" id="sbTimerInput">
+          <input type="text" class="tb h" maxlength="2" value="00">
+          <span>:</span>
+          <input type="text" class="tb m" maxlength="2" value="00">
+          <span>:</span>
+          <input type="text" class="tb s" maxlength="2" value="00">
+        </div>
+        <div class="sb-timer-btns">
+          <button id="sbStartBtn">START</button>
+          <button id="sbResetBtn">RESET</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BROWSE NOTES: BIGGER, WIDER, SPACIOUS -->
+    <div class="sb-label">Browse Notes</div>
+    <div class="nav on" data-p="p1">
+      <div class="nav-ico">🔧</div>
+      <div class="nav-txt">Tech Notes<small>NIC · SIC · NDT · Repair</small></div>
+    </div>
+    <div class="nav" data-p="p2">
+      <div class="nav-ico">📋</div>
+      <div class="nav-txt">Non Tech Notes<small>Simple · Complex · SO</small></div>
+    </div>
+    <div class="nav" data-p="p3">
+      <div class="nav-ico">🔁</div>
+      <div class="nav-txt">Reconnection<small>TD · PD · PTP · Reported</small></div>
+    </div>
+    <div class="nav" data-p="p4">
+      <div class="nav-ico">📌</div>
+      <div class="nav-txt">Follow Up Notes<small>Within · Beyond · ALS</small></div>
+    </div>
+    <div class="nav" data-p="p5">
+      <div class="nav-ico">💳</div>
+      <div class="nav-txt">Rebate Ordertake<small>CEP · SF · Covered Dates</small></div>
+    </div>
+    <div class="nav" data-p="p6">
+      <div class="nav-ico">📝</div>
+      <div class="nav-txt">Notepad<small>Sheets &amp; AHT Tracker</small></div>
+    </div>
+    <div class="nav" data-p="p8">
+      <div class="nav-ico">✂️</div>
+      <div class="nav-txt">Quick Snippets<small>1-Click Copy Templates</small></div>
+    </div>
+    <div class="nav" data-p="p7">
+      <div class="nav-ico">📜</div>
+      <div class="nav-txt">Note History<small>Past Generated Notes</small></div>
+    </div>
+    <div class="nav" data-p="p9">
+      <div class="nav-ico">🏁</div>
+      <div class="nav-txt">End Shift<small>Editable Call Counts</small></div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ══ P1: TECH NOTES ══ -->
+    <section id="p1" class="panel on">
+      <div class="ptop">
+        <div class="ptop-left"><span class="ptop-title">TECH NOTES</span><span class="ptop-badge">Technical</span></div>
+        <div class="view-switch">
+          <button class="view-btn on" data-target="form">📝 Form</button>
+          <button class="view-btn" data-target="out">📋 Output</button>
+        </div>
+      </div>
+      <div class="split">
+        <div class="fp"><div class="fg">
+          <div class="c6 fld"><label class="flbl">C- INF-</label><select id="infCat1"><option></option><option>SOCMED</option><option>INB</option><option>HOTLINE</option></select></div>
+          <div class="c6"></div>
+          <div class="c4 fld"><label class="flbl">Case Number</label><input id="caseNumber1" type="text"/></div>
+          <div class="c8 fld"><label class="flbl">Concern</label>
+            <select id="concern1"><option></option><option>Cannot Make Calls</option><option>Cannot Receive Calls</option><option>CGNAT Request</option><option>Change WiFi Name/ Password</option><option>Defective Modem</option><option>Frequent Disconnection</option><option>LAN Port Activation</option><option>Missing Channel (IPTV-CIGNAL)</option><option>No Audio Output (IPTV-CIGNAL)</option><option>No Audio, No Video (IPTV-CIGNAL)</option><option>No Dial Tone (NDT)</option><option>No Internet Connection (NIC)</option><option>No Internet, No Dial Tone (NIC NDT)</option><option>Noisy/Static Line</option><option>Pixelated Video (IPTV-CIGNAL)</option><option>Selective Browsing</option><option>Slow Internet Connection (SIC)</option><option>Super Admin GUI Access</option><option>Telset Replacement</option></select>
+          </div>
+
+          <div class="spoke-top"><label class="flbl">📞 Spoke to</label><input id="spokeTo1" type="text" placeholder="e.g. John (Customer)" style="flex:1"/><button class="autofill-spoke" id="autoFillSpoke1">↻ Same caller</button></div>
+
+          <div class="fsec"><span class="fsec-t">Upsell</span><div class="fsec-l"></div></div>
+          <div class="upsell-error" id="upsellErr1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Please fill in both Upsell Status and Offer Selected before generating.</div>
+          <div class="c6 fld"><label class="flbl">Upsell Status</label><select id="upsell1"><option></option><option>#UpsellAccepted</option><option>#UpsellDeclined</option><option>#UpsellUndecided</option><option>#UpsellIgnored</option><option>#UpsellNotEligible</option><option>#UpsellLater</option></select></div>
+          <div class="c6 fld"><label class="flbl">Offer Selected</label><select id="offer1"><option></option><option>ALWAYS ON</option><option>MESH</option><option>UPGRADE</option><option>SAO 500</option><option>EUFY</option><option>CIGNAL</option><option>CORDLESS TELSET</option></select></div>
+
+          <div class="fsec"><span class="fsec-t">Customer Authentication</span><div class="fsec-l"></div></div>
+          <div class="c4 fld"><label class="flbl">Customer Authentication</label><select id="auth1Sel"><option></option><option>Passed</option><option>Failed</option><option>Incomplete</option><option>Declined</option><option>No Response</option></select></div>
+
+          <div class="fsec"><span class="fsec-t">A–</span><div class="fsec-l"></div></div>
+          <div class="c4 fld"><label class="flbl">Account Status</label><select id="acctStatus1"><option></option><option>ACTIVE</option><option>BARRED</option><option>SUSPENDED(TD)</option><option>PERMANENT DISCONNECTED</option></select></div>
+          <div class="c4 fld"><label class="flbl">Outage</label><select id="outage1"><option></option><option>Yes</option><option>No</option></select></div>
+          <div class="c4 fld"><label class="flbl">FT/TT#</label><input id="ft1" type="text"/></div>
+          <div class="c4 fld"><label class="flbl">SO/PT Number</label><input id="soNumber1" type="text"/></div>
+
+          <div class="fsec"><span class="fsec-t">Clearview</span><div class="fsec-l"></div></div>
+          <div class="c4 fld"><label class="flbl">ONU Serial Number</label><input id="onuSerial1" type="text"/></div>
+          <div class="c4 fld"><label class="flbl">RX Power</label><input id="rxPower1" type="text"/></div>
+          <div class="c4 fld"><label class="flbl">NMS</label><select id="nms1"><option></option><option>Up/Active</option><option>LOS/Down</option><option>Power-Off</option><option>Null</option><option>FLM Transaction not supported</option></select></div>
+          <div class="c4 fld"><label class="flbl">IP Address</label><input id="ip1" type="text"/></div>
+          <div class="c4 fld"><label class="flbl">VLAN</label><select id="vlan1"><option></option><option>1030</option><option>1039</option><option>30</option><option>null</option></select></div>
+          <div class="c4 fld"><label class="flbl">OPT 82</label><input id="opt821" type="text"/></div>
+          <div class="c4 fld"><label class="flbl">DMS</label><input id="dms1" type="text"/></div>
+          <div class="c4 fld"><label class="flbl">Modem Lights Indicator</label>
+            <select id="onuStatus1"><option></option><option>Internet – Steady</option><option>Internet – Blinking</option><option>LAN 1 Steady</option><option>LAN 1 Blinking</option><option>LAN 2 Steady</option><option>LAN 2 Blinking</option><option>LAN 3 Steady</option><option>LAN 3 Blinking</option><option>LAN 4 Steady</option><option>LAN 4 Blinking</option><option>TEL/Phone – Steady</option><option>TEL/Phone – Blinking</option></select>
+          </div>
+          <div class="c4 fld"><label class="flbl">Power Light</label><select id="modem1"><option></option><option>Steady Green</option><option>Blinking Green</option><option>No Light</option></select></div>
+          <div class="c4 fld"><label class="flbl">PON Light</label><select id="modem2"><option></option><option>Steady Green</option><option>Blinking Green</option><option>No Light</option></select></div>
+          <div class="c4 fld"><label class="flbl">LOS</label><select id="modem3"><option></option><option>Blinking Red</option><option>No Light</option></select></div>
+          <div class="c4 fld"><label class="flbl">Clearview Reading</label>
+            <select id="cvStatus1"><option></option><option>FAILED RX</option><option>Failed to collect line card Information</option><option>Fiber Cut</option><option>FIBER CUT OLT-LCP</option><option>Fiber Cut LCP-NAP</option><option>Fiber Cut NAP-ONU</option><option>Line is no longer provisioned in DZS Expresse.</option><option>Line ID Not Found - Please enter a valid Line ID and search again.</option><option>No action recommended for unknown DSL line status. Failed to collect the line card information from the MSAN</option><option>No recommended Action</option><option>ONU Performance is Degraded</option><option>Onu is OFF</option><option>Rouge ONU</option><option>Severely Degraded</option><option>The OLT is Admin down.</option><option>The ONU appears to be disconnected.</option><option>The ONU is out of service</option><option>There is no connection to the dslam or the credentials are invalid</option><option>Without FTTH Line Problem</option></select>
+          </div>
+          <div class="c4 fld"><label class="flbl">Contact Person</label><input id="contactPerson1" type="text"/></div>
+          <div class="c4 fld"><label class="flbl">Contact Number</label><input id="contactNumber1" type="text"/></div>
+          <div class="c4 fld"><label class="flbl">Availability</label><input id="availability1" type="text"/></div>
+          <div class="c4 fld"><label class="flbl">Landmark</label><input id="landmark1" type="text"/></div>
+          <div class="c4 fld"><label class="flbl">Physical Address</label><input id="physAddr1" type="text"/></div>
+          <div class="c4 fld"><label class="flbl">Self Care Offered</label>
+            <select id="scc1"><option></option><option>Documents Mailbox</option><option>IVRS</option><option>MyHome Website</option><option>PayMan Mailbox</option><option>PLDT Care Web Forms</option><option>PLDT Home Digital Assistant (Chatbot)</option><option>PLDT Home Rewards</option><option>PLDT MYHOME WEB</option><option>PLDT Tracker</option><option>PLDT United Home Website (UHW)</option><option>PLDT X (Twitter)</option><option>pldthomeretentionops@pldt.com.ph</option><option>Promos &amp; Deals</option><option>Support Page</option></select>
+          </div>
+          <div class="c12 fld">
+            <label class="flbl">Remarks (Action taken / Investigation Matrix)</label>
+            <textarea id="remarks1" class="wide-remarks"></textarea>
+            <span class="field-hint">Enter: Jump next field · Shift+Enter: New line</span>
+          </div>
+          <div class="c12 fld"><label class="flbl">WOCAS</label><input id="wocas1b" type="text" class="wide-wocas"/></div>
+        </div></div>
+        <div class="op" id="op1">
+          <div class="op-hdr"><span class="op-hdr-t">Generated Output</span><button class="btn-expand" data-panel="p1" id="expand1" title="Expand output"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>EXPAND</button></div>
+          <div class="op-body"><pre id="out1" class="op-pre ph">Fill the form and click Generate.</pre></div>
+          <div class="op-footer">
+            <div class="btn-row"><button class="btn-gen" id="gen1">⚡ GENERATE</button><button class="btn-ghost" id="copy1">Copy</button><button class="btn-ghost" id="clear1">Clear</button></div>
+            <div class="foot-meta"><span class="stamp" id="stamp1"></span><span class="hint"><span class="key">Ctrl</span>+<span class="key">G</span><small style="margin-left:4px">Generate</small>&nbsp;|&nbsp;<span class="key">Ctrl</span>+<span class="key">E</span><small style="margin-left:4px">Expand</small></span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ P2: NON TECH NOTES ══ -->
+    <section id="p2" class="panel">
+      <div class="ptop">
+        <div class="ptop-left"><span class="ptop-title">NON TECH NOTES</span><span class="ptop-badge">Non-Technical</span></div>
+        <div class="view-switch">
+          <button class="view-btn on" data-target="form">📝 Form</button>
+          <button class="view-btn" data-target="out">📋 Output</button>
+        </div>
+      </div>
+      <div class="split">
+        <div class="fp"><div class="fg">
+          <div class="c6 fld"><label class="flbl">C- INF-</label><select id="infCat2"><option></option><option>SOCMED</option><option>INB</option><option>HOTLINE</option></select></div>
+          <div class="c4"></div>
+          <div class="c4 fld"><label class="flbl">Case Number</label><input id="caseNumber2" type="text"/></div>
+          <div class="c4 fld"><label class="flbl">Concern</label>
+            <select id="concern2"><option></option><option>Activation Special Features</option><option>Agent Complaint</option><option>Bill Breakdown</option><option>Bill Delivery</option><option>Billing Concern</option><option>Change of ownership</option><option>Change of Telephone Number</option><option>Change of Telephone Unit</option><option>Cignal Add-on</option><option>Connect Extension Line</option><option>Deactivation of Special Features</option><option>Disconnect Extension Line</option><option>Disconnection of Service</option><option>Disconnection of VAS</option><option>Downgrade Request</option><option>Due Date Extension</option><option>ECA/Payment Installment Plan</option><option>HBO</option><option>IGV</option><option>Inmove Transfer</option><option>Migration</option><option>Misapplied Payment</option><option>Modify Number</option><option>Modify Service Address (AMEND SAM)</option><option>MyHome Concern</option><option>NETFLIX</option><option>New Application</option><option>Non-Simul Relocation</option><option>Occular Inspection</option><option>Others</option><option>Outstanding Balance</option><option>Permanent Due Date Modification</option><option>Personnel Complaint</option><option>Plan details</option><option>Re-Routing Inside and Outside Wire</option><option>Rebate on Rentals/ Toll Usage/ One Time</option><option>Rebates</option><option>Reconnection from PD</option><option>Reconnection from TD</option><option>Reconnection via FUSE</option><option>Refer to Other Hotline</option><option>Refund</option><option>Relocation</option><option>Resetting of PIN</option><option>Simul Relocation</option><option>Speed Alignment</option><option>Supersedure of Service</option><option>Transfer of Payment</option><option>Unli Fam Call</option><option>Unreflected Payment</option><option>Updating Acc Information</option><option>Upgrade Request</option><option>Vanity Number</option><option>VAS</option><option>VAS Configuration</option><option>VTD</option><option>WiFi Mesh Add-on</option></select>
+          </div>
+          <div class="c4 fld"><label class="flbl">Inquiry</label>
+            <select id="inquiry2"><option></option><option>Activation Special Features</option><option>Agent Complaint</option><option>Bill Breakdown</option><option>Bill Delivery</option><option>Billing Concern</option><option>Change of ownership</option><option>Change of Telephone Number</option><option>Change of Telephone Unit</option><option>Cignal Add-on</option><option>Connect Extension Line</option><option>Deactivation of Special Features</option><option>Disconnect Extension Line</option><option>Disconnection of Service</option><option>Disconnection of VAS</option><option>Downgrade Request</option><option>Due Date Extension</option><option>ECA/Payment Installment Plan</option><option>HBO</option><option>IGV</option><option>Inmove Transfer</option><option>Migration</option><option>Misapplied Payment</option><option>Modify Number</option><option>Modify Service Address (AMEND SAM)</option><option>MyHome Concern</option><option>NETFLIX</option><option>New Application</option><option>Non-Simul Relocation</option><option>Occular Inspection</option><option>Others</option><option>Outstanding Balance</option><option>Permanent Due Date Modification</option><option>Personnel Complaint</option><option>Plan details</option><option>Re-Routing Inside and Outside Wire</option><option>Rebate on Rentals/ Toll Usage/ One Time</option><option>Rebates</option><option>Reconnection from PD</option><option>Reconnection from TD</option><option>Reconnection via FUSE</option><option>Refer to Other Hotline</option><option>Refund</option><option>Relocation</option><option>Resetting of PIN</option><option>Simul Relocation</option><option>Speed Alignment</option><option>Supersedure of Service</option><option>Transfer of Payment</option><option>Unli Fam Call</option><option>Unreflected Payment</option><option>Updating Acc Information</option><option>Upgrade Request</option><option>Vanity Number</option><option>VAS</option><option>VAS Configuration</option><option>VTD</option><option>WiFi Mesh Add-on</option></select>
+          </div>
+          <div class="c4 fld"><label class="flbl">Request</label>
+            <select id="request2"><option></option><option>Activation Special Features</option><option>Agent Complaint</option><option>Bill Breakdown</option><option>Bill Delivery</option><option>Billing Concern</option><option>Change of ownership</option><option>Change of Telephone Number</option><option>Change of Telephone Unit</option><option>Cignal Add-on</option><option>Connect Extension Line</option><option>Deactivation of Special Features</option><option>Disconnect Extension Line</option><option>Disconnection of Service</option><option>Disconnection of VAS</option><option>Downgrade Request</option><option>Due Date Extension</option><option>ECA/Payment Installment Plan</option><option>HBO</option><option>IGV</option><option>Inmove Transfer</option><option>Migration</option><option>Misapplied Payment</option><option>Modify Number</option><option>Modify Service Address (AMEND SAM)</option><option>MyHome Concern</option><option>NETFLIX</option><option>New Application</option><option>Non-Simul Relocation</option><option>Occular Inspection</option><option>Others</option><option>Outstanding Balance</option><option>Permanent Due Date Modification</option><option>Personnel Complaint</option><option>Plan details</option><option>Re-Routing Inside and Outside Wire</option><option>Rebate on Rentals/ Toll Usage/ One Time</option><option>Rebates</option><option>Reconnection from PD</option><option>Reconnection from TD</option><option>Reconnection via FUSE</option><option>Refer to Other Hotline</option><option>Refund</option><option>Relocation</option><option>Resetting of PIN</option><option>Simul Relocation</option><option>Speed Alignment</option><option>Supersedure of Service</option><option>Transfer of Payment</option><option>Unli Fam Call</option><option>Unreflected Payment</option><option>Updating Acc Information</option><option>Upgrade Request</option><option>Vanity Number</option><option>VAS</option><option>VAS Configuration</option><option>VTD</option><option>WiFi Mesh Add-on</option></select>
+          </div>
+          <div class="c4 fld"><label class="flbl">Follow Up</label>
+            <select id="followUp2"><option></option><option>Activation Special Features</option><option>Agent Complaint</option><option>Bill Breakdown</option><option>Bill Delivery</option><option>Billing Concern</option><option>Change of ownership</option><option>Change of Telephone Number</option><option>Change of Telephone Unit</option><option>Cignal Add-on</option><option>Connect Extension Line</option><option>Deactivation of Special Features</option><option>Disconnect Extension Line</option><option>Disconnection of Service</option><option>Disconnection of VAS</option><option>Downgrade Request</option><option>Due Date Extension</option><option>ECA/Payment Installment Plan</option><option>HBO</option><option>IGV</option><option>Inmove Transfer</option><option>Migration</option><option>Misapplied Payment</option><option>Modify Number</option><option>Modify Service Address (AMEND SAM)</option><option>MyHome Concern</option><option>NETFLIX</option><option>New Application</option><option>Non-Simul Relocation</option><option>Occular Inspection</option><option>Others</option><option>Outstanding Balance</option><option>Permanent Due Date Modification</option><option>Personnel Complaint</option><option>Plan details</option><option>Re-Routing Inside and Outside Wire</option><option>Rebate on Rentals/ Toll Usage/ One Time</option><option>Rebates</option><option>Reconnection from PD</option><option>Reconnection from TD</option><option>Reconnection via FUSE</option><option>Refer to Other Hotline</option><option>Refund</option><option>Relocation</option><option>Resetting of PIN</option><option>Simul Relocation</option><option>Speed Alignment</option><option>Supersedure of Service</option><option>Transfer of Payment</option><option>Unli Fam Call</option><option>Unreflected Payment</option><option>Updating Acc Information</option><option>Upgrade Request</option><option>Vanity Number</option><option>VAS</option><option>VAS Configuration</option><option>VTD</option><option>WiFi Mesh Add-on</option></select>
+          </div>
+          <div class="fsec"><span class="fsec-t">Upsell</span><div class="fsec-l"></div></div>
+          <div class="upsell-error" id="upsellErr2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Please fill in both Upsell Status and Offer Selected before generating.</div>
+          <div class="c6 fld"><label class="flbl">Upsell Status</label><select id="upsell2"><option></option><option>#UpsellAccepted</option><option>#UpsellDeclined</option><option>#UpsellUndecided</option><option>#UpsellIgnored</option><option>#UpsellNotEligible</option><option>#UpsellLater</option></select></div>
+          <div class="c6 fld"><label class="flbl">Offer Selected</label><select id="offer2"><option></option><option>ALWAYS ON</option><option>MESH</option><option>UPGRADE</option><option>SAO 500</option><option>EUFY</option><option>CIGNAL</option><option>CORDLESS TELSET</option></select></div>
+          <div class="fsec"><span class="fsec-t">A:</span><div class="fsec-l"></div></div>
+          <div class="c6 fld"><label class="flbl">Customer Name</label><input id="custName2" type="text"/></div>
+          <div class="c6 fld"><label class="flbl">Account Number</label><input id="acctNum2" type="text"/></div>
+          <div class="c4 fld"><label class="flbl">Customer Authentication</label><select id="authSel2"><option></option><option>Passed</option><option>Failed</option><option>Incomplete</option><option>Declined</option><option>No Response</option></select></div>
+          <div class="c4 fld"><label class="flbl">SO Number</label><input id="soNumber2" type="text"/></div>
+          <div class="c4 fld"><label class="flbl">FT/TT#</label><input id="ft2n" type="text"/></div>
+          <div class="c4 fld"><label class="flbl">Account Status</label><select id="acctStatus2"><option></option><option>ACTIVE</option><option>BARRED</option><option>SUSPENDED (TD)</option><option>PERMANENT DISCONNECTED</option></select></div>
+          <div class="c4 fld"><label class="flbl">SO Status</label><input id="outage2" type="text"/></div>
+          <div class="c12 fld"><label class="flbl">WOCAS</label><input id="wocas2" type="text" class="wide-wocas"/></div>
+          <div class="c4 fld"><label class="flbl">Self Care Offered</label><select id="scc2"><option></option><option>Documents Mailbox</option><option>IVRS</option><option>MyHome Website</option><option>PayMan Mailbox</option><option>PLDT Care Web Forms</option><option>PLDT Home Digital Assistant (Chatbot)</option><option>PLDT Home Rewards</option><option>PLDT MYHOME WEB</option><option>PLDT Tracker</option><option>PLDT United Home Website (UHW)</option><option>PLDT X (Twitter)</option><option>pldthomeretentionops@pldt.com.ph</option><option>Promos &amp; Deals</option><option>Support Page</option></select></div>
+          <div class="c12 fld"><label class="flbl">Remarks (Action taken)</label><textarea id="remarks2n" class="wide-remarks"></textarea></div>
+        </div></div>
+        <div class="op" id="op2">
+          <div class="op-hdr"><span class="op-hdr-t">Generated Output</span><button class="btn-expand" data-panel="p2" id="expand2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>EXPAND</button></div>
+          <div class="op-body"><pre id="out2" class="op-pre ph">Fill the form and click Generate.</pre></div>
+          <div class="op-footer"><div class="btn-row"><button class="btn-gen" id="gen2">⚡ GENERATE</button><button class="btn-ghost" id="copy2">Copy</button><button class="btn-ghost" id="clear2">Clear</button></div><div class="foot-meta"><span class="stamp" id="stamp2"></span><span class="hint"><span class="key">Ctrl</span>+<span class="key">G</span></span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ P3: RECONNECTION ══ -->
+    <section id="p3" class="panel">
+      <div class="ptop">
+        <div class="ptop-left"><span class="ptop-title">RECONNECTION</span><span class="ptop-badge">Recon</span></div>
+        <div class="view-switch">
+          <button class="view-btn on" data-target="form">📝 Form</button>
+          <button class="view-btn" data-target="out">📋 Output</button>
+        </div>
+      </div>
+      <div class="split">
+        <div class="fp"><div class="fg">
+          <div class="c6 fld"><label class="flbl">C- INF-</label><select id="infCat3"><option></option><option>SOCMED</option><option>INB</option><option>HOTLINE</option></select></div>
+          <div class="c6"></div>
+          <div class="c6 fld"><label class="flbl">Case Number</label><input id="recoCust" type="text"/></div>
+          <div class="c6 fld"><label class="flbl">Concern</label><select id="recoAcct"><option></option><option>Reconnection</option><option>Reconn via PTP</option><option>Reconn via Reported Payment</option></select></div>
+          <div class="fsec"><span class="fsec-t">Upsell</span><div class="fsec-l"></div></div>
+          <div class="upsell-error" id="upsellErr3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Please fill in both Upsell Status and Offer Selected before generating.</div>
+          <div class="c6 fld"><label class="flbl">Upsell Status</label><select id="upsell3"><option></option><option>#UpsellAccepted</option><option>#UpsellDeclined</option><option>#UpsellUndecided</option><option>#UpsellIgnored</option><option>#UpsellNotEligible</option><option>#UpsellLater</option></select></div>
+          <div class="c6 fld"><label class="flbl">Offer Selected</label><select id="offer3"><option></option><option>ALWAYS ON</option><option>MESH</option><option>UPGRADE</option><option>SAO 500</option><option>EUFY</option><option>CIGNAL</option><option>CORDLESS TELSET</option></select></div>
+          <div class="fsec"><span class="fsec-t">A:</span><div class="fsec-l"></div></div>
+          <div class="c4 fld"><label class="flbl">Customer Authentication</label><select id="recoAuth"><option></option><option>Passed</option><option>Failed</option><option>Incomplete</option><option>Declined</option><option>No Response</option></select></div>
+          <div class="c4 fld"><label class="flbl">Contact Number</label><input id="recoContact" type="text"/></div>
+          <div class="c4 fld"><label class="flbl">Email Address</label><input id="recoEmail" type="email"/></div>
+          <div class="c6 fld"><label class="flbl">Last Mode of Payment</label><input id="recoMOP" type="text"/></div>
+          <div class="c6 fld"><label class="flbl">Physical Address</label><input id="recoAddr" type="text"/></div>
+          <div class="c6 fld"><label class="flbl">Account Status</label><select id="recoAcctStatus"><option></option><option>ACTIVE</option><option>BARRED</option><option>SUSPENDED(TD)</option><option>PERMANENT DISCONNECTED</option></select></div>
+          <div class="fsec"><span class="fsec-t">Billing Info</span><div class="fsec-l"></div></div>
+          <div class="c4 fld"><label class="flbl">Informed Due Date</label><input id="recoDue" type="text"/></div>
+          <div class="c4 fld"><label class="flbl">Outstanding Balance</label><input id="recoOB" type="text"/></div>
+          <div class="c4 fld"><label class="flbl">Covered Period</label><input id="recoCovered" type="text"/></div>
+          <div class="c4 fld"><label class="flbl">Self Care Offered</label><select id="scc3"><option></option><option>Documents Mailbox</option><option>IVRS</option><option>MyHome Website</option><option>PayMan Mailbox</option><option>PLDT Care Web Forms</option><option>PLDT Home Digital Assistant (Chatbot)</option><option>PLDT Home Rewards</option><option>PLDT MYHOME WEB</option><option>PLDT Tracker</option><option>PLDT United Home Website (UHW)</option><option>PLDT X (Twitter)</option><option>pldthomeretentionops@pldt.com.ph</option><option>Promos &amp; Deals</option><option>Support Page</option></select></div>
+          <div class="c12 fld"><label class="flbl">Remarks</label><textarea id="recoRemarks" class="wide-remarks"></textarea></div>
+          <div class="c12 fld"><label class="flbl">Reconnection Request</label><select id="recoReq"><option></option><option>Reconnection Request has been submitted.</option><option>Has a previous Reconnection Request.</option><option>This account has failed on restriction and need for deviation approval in order to proceed with the reconnection.</option></select></div>
+          <div class="fsec"><span class="fsec-t">Payment Details</span><div class="fsec-l"></div></div>
+          <div class="c3 fld"><label class="flbl">Amount Paid</label><input id="recoAmt" type="text"/></div>
+          <div class="c3 fld"><label class="flbl">Payment Ref#</label><input id="recoRef" type="text"/></div>
+          <div class="c3 fld"><label class="flbl">Date of Payment</label><input id="recoPayDate" type="text"/></div>
+          <div class="c3 fld"><label class="flbl">Payment Channel</label><input id="recoChannel" type="text"/></div>
+          <div class="c12 fld"><label class="flbl">WOCAS</label><input id="recoWocas" type="text" class="wide-wocas"/></div>
+        </div></div>
+        <div class="op" id="op3">
+          <div class="op-hdr"><span class="op-hdr-t">Generated Output</span><button class="btn-expand" data-panel="p3" id="expand3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>EXPAND</button></div>
+          <div class="op-body"><pre id="out3" class="op-pre ph">Fill the form and click Generate.</pre></div>
+          <div class="op-footer"><div class="btn-row"><button class="btn-gen" id="gen3">⚡ GENERATE</button><button class="btn-ghost" id="copy3">Copy</button><button class="btn-ghost" id="clear3">Clear</button></div><div class="foot-meta"><span class="stamp" id="stamp3"></span><span class="hint"><span class="key">Ctrl</span>+<span class="key">G</span></span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ P4: FOLLOW UP NOTES ══ -->
+    <section id="p4" class="panel">
+      <div class="ptop">
+        <div class="ptop-left"><span class="ptop-title">FOLLOW UP NOTES</span><span class="ptop-badge">Follow Up</span></div>
+        <div class="view-switch">
+          <button class="view-btn on" data-target="form">📝 Form</button>
+          <button class="view-btn" data-target="out">📋 Output</button>
+        </div>
+      </div>
+      <div class="split">
+        <div class="fp"><div class="fg">
+          <div class="fsec"><span class="fsec-t">Header</span><div class="fsec-l"></div></div>
+          <div class="c4 fld"><label class="flbl">INF Type</label><select id="infType4"><option></option><option>INB</option><option>SOCMED</option><option>HOTLINE</option></select></div>
+          <div class="c4 fld"><label class="flbl">PLDT Domain</label><input id="vendor4" type="text" placeholder="e.g. PLDT.COM"/></div>
+          <div class="c4 fld"><label class="flbl">WOCAS</label><input id="ffupwocas4" type="text" class="wide-wocas"/></div>
+          <div class="c6 fld"><label class="flbl">Reported By</label><input id="reportedBy4" type="text"/></div>
+          <div class="c6 fld"><label class="flbl">Account Number</label><input id="accountNumber4" type="text"/></div>
+          <div class="c4 fld"><label class="flbl">Case Number (FOR SOCMED)</label><input id="caseNumber4" type="text"/></div>
+          <div class="c4 fld"><label class="flbl">FT/TT# (Ticket Number)</label><input id="ft4" type="text"/></div>
+          <div class="fsec"><span class="fsec-t">Follow Up Details</span><div class="fsec-l"></div></div>
+          <div class="c4 fld"><label class="flbl">Follow-Up</label><select id="followUp4"><option></option><option>Within</option><option>Beyond</option></select></div>
+          <div class="c4 fld"><label class="flbl">Follow-Up Count</label><input id="followUpCount4" type="text"/></div>
+          <div class="c4 fld"><label class="flbl">Case Age</label><input id="caseAge4" type="text"/></div>
+          <div class="c4 fld"><label class="flbl">Case SLA</label><input id="caseSla4" type="text"/></div>
+          <div class="c4 fld"><label class="flbl">Case WG (Workgroup)</label><input id="ftWorkgroup4" type="text"/></div>
+          <div class="c4 fld"><label class="flbl">CBR</label><input id="cbr4" type="text"/></div>
+          <div class="c4 fld"><label class="flbl">ALS Offer (Beyond SLA)</label><select id="slaOffer4"><option></option><option>ACCEPTED</option><option>DECLINED</option><option>NO ANSWER</option></select></div>
+          <div class="c4 fld"><label class="flbl">Date Escalated</label><input id="dateEscalated4" type="text" placeholder="e.g. 2025-01-15"/></div>
+          <div class="c12 fld"><label class="flbl">Remarks / Actions Taken</label><textarea id="remarks4" class="wide-remarks"></textarea></div>
+          <div class="fsec"><span class="fsec-t">Upsell</span><div class="fsec-l"></div></div>
+          <div class="upsell-error" id="upsellErr4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Please fill in both Upsell Status and Offer Selected before generating.</div>
+          <div class="c6 fld"><label class="flbl">Upsell Status</label><select id="upsell4"><option></option><option>#UpsellAccepted</option><option>#UpsellDeclined</option><option>#UpsellUndecided</option><option>#UpsellIgnored</option><option>#UpsellNotEligible</option><option>#UpsellLater</option></select></div>
+          <div class="c6 fld"><label class="flbl">Offer Selected</label><select id="offer4"><option></option><option>ALWAYS ON</option><option>MESH</option><option>UPGRADE</option><option>SAO 500</option><option>EUFY</option><option>CIGNAL</option><option>CORDLESS TELSET</option></select></div>
+          <div class="c6 fld"><label class="flbl">Self Care Offered</label><select id="scc4"><option></option><option>Documents Mailbox</option><option>IVRS</option><option>MyHome Website</option><option>PayMan Mailbox</option><option>PLDT Care Web Forms</option><option>PLDT Home Digital Assistant (Chatbot)</option><option>PLDT Home Rewards</option><option>PLDT MYHOME WEB</option><option>PLDT Tracker</option><option>PLDT United Home Website (UHW)</option><option>PLDT X (Twitter)</option><option>pldthomeretentionops@pldt.com.ph</option><option>Promos &amp; Deals</option><option>Support Page</option></select></div>
+        </div></div>
+        <div class="op" id="op4">
+          <div class="op-hdr"><span class="op-hdr-t">Generated Output</span><button class="btn-expand" data-panel="p4" id="expand4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>EXPAND</button></div>
+          <div class="op-body"><pre id="out4" class="op-pre ph">Fill the form and click Generate.</pre></div>
+          <div class="op-footer"><div class="btn-row"><button class="btn-gen" id="gen4">⚡ GENERATE</button><button class="btn-ghost" id="copy4">Copy</button><button class="btn-ghost" id="clear4">Clear</button></div><div class="foot-meta"><span class="stamp" id="stamp4"></span><span class="hint"><span class="key">Ctrl</span>+<span class="key">G</span></span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ P5: REBATE ORDERTAKE ══ -->
+    <section id="p5" class="panel">
+      <div class="ptop">
+        <div class="ptop-left"><span class="ptop-title">REBATE ORDERTAKE</span><span class="ptop-badge">Rebate</span></div>
+        <div class="view-switch">
+          <button class="view-btn on" data-target="form">📝 Form</button>
+          <button class="view-btn" data-target="out">📋 Output</button>
+        </div>
+      </div>
+      <div class="split">
+        <div class="fp"><div class="fg">
+          <div class="fsec"><span class="fsec-t">Upsell</span><div class="fsec-l"></div></div>
+          <div class="upsell-error" id="upsellErr5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Please fill in both Upsell Status and Offer Selected before generating.</div>
+          <div class="c6 fld"><label class="flbl">Upsell Status</label><select id="upsell5"><option></option><option>#UpsellAccepted</option><option>#UpsellDeclined</option><option>#UpsellUndecided</option><option>#UpsellIgnored</option><option>#UpsellNotEligible</option><option>#UpsellLater</option></select></div>
+          <div class="c6 fld"><label class="flbl">Offer Selected</label><select id="offer5"><option></option><option>ALWAYS ON</option><option>MESH</option><option>UPGRADE</option><option>SAO 500</option><option>EUFY</option><option>CIGNAL</option><option>CORDLESS TELSET</option></select></div>
+          <div class="c6 fld"><label class="flbl">C- INF-</label><select id="infCat5"><option></option><option>SOCMED</option><option>INB</option><option>HOTLINE</option></select></div>
+          <div class="c6 fld"><label class="flbl">Concern</label><input id="concern5" type="text"/></div>
+          <div class="c12 fld"><label class="flbl">A:</label><textarea id="a5" class="wide-remarks"></textarea></div>
+          <div class="c4 fld"><label class="flbl">SF Case Number / Call ID</label><input id="sfCase5" type="text"/></div>
+          <div class="c4 fld"><label class="flbl">Account Number</label><input id="acc5" type="text"/></div>
+          <div class="c4 fld"><label class="flbl">Mobile Number</label><input id="mobile5" type="text"/></div>
+          <div class="c6 fld"><label class="flbl">CEP/FT Case Number</label><input id="cepft5" type="text"/></div>
+          <div class="c6 fld"><label class="flbl">Covered Dates</label><input id="covered5" type="text" placeholder="If no CEP, base on WOCAS"/></div>
+          <div class="c4 fld"><label class="flbl">Self Care Offered</label><select id="scc5"><option></option><option>Documents Mailbox</option><option>IVRS</option><option>MyHome Website</option><option>PayMan Mailbox</option><option>PLDT Care Web Forms</option><option>PLDT Home Digital Assistant (Chatbot)</option><option>PLDT Home Rewards</option><option>PLDT MYHOME WEB</option><option>PLDT Tracker</option><option>PLDT United Home Website (UHW)</option><option>PLDT X (Twitter)</option><option>pldthomeretentionops@pldt.com.ph</option><option>Promos &amp; Deals</option><option>Support Page</option></select></div>
+        </div></div>
+        <div class="op" id="op5">
+          <div class="op-hdr"><span class="op-hdr-t">Generated Output</span><button class="btn-expand" data-panel="p5" id="expand5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>EXPAND</button></div>
+          <div class="op-body"><pre id="out5" class="op-pre ph">Fill the form and click Generate.</pre></div>
+          <div class="op-footer"><div class="btn-row"><button class="btn-gen" id="gen5">⚡ GENERATE</button><button class="btn-ghost" id="copy5">Copy</button><button class="btn-ghost" id="clear5">Clear</button></div><div class="foot-meta"><span class="stamp" id="stamp5"></span><span class="hint"><span class="key">Ctrl</span>+<span class="key">G</span></span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ P6: NOTEPAD + AHT TRACKER ══ -->
+    <section id="p6" class="panel">
+      <div class="ptop">
+        <div class="ptop-left"><span class="ptop-title">NOTEPAD &amp; AHT</span><span class="ptop-badge">Quick Notes</span></div>
+        <button class="btn-ghost" id="notepadBackBtn" type="button" style="padding:6px 12px;">← Back</button>
+      </div>
+      <div class="notepad-split">
+        <!-- LEFT: NOTEPAD -->
+        <div class="notepad-left">
+          <!-- SHEET TABS -->
+          <div class="sheet-tabs" id="sheetTabs"></div>
+
+          <!-- PROMINENT EDITABLE SHEET TITLE BAR -->
+          <div class="sheet-title-edit-bar">
+            <span class="st-lbl">Sheet Title:</span>
+            <input type="text" id="sheetTitleInput" class="st-input" placeholder="e.g. NOTE for Escalation / Account Number..."/>
+            <span class="st-hint">✏️ Edit name</span>
+          </div>
+
+          <textarea id="notepadArea" style="flex:1;resize:none;font-family:var(--mono);font-size:13px" placeholder="Start typing your notes here..."></textarea>
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <button class="btn-ghost" id="clearNote">Clear Current Sheet</button>
+            <span id="autoSaveIndicator" style="font-size:.67rem;font-weight:700;letter-spacing:.5px;transition:color .2s"></span>
+          </div>
+        </div>
+
+        <!-- RIGHT: AHT TRACKER -->
+        <div class="aht-panel">
+          <div class="aht-header">
+            <span class="aht-header-title">AHT TRACKER</span>
+            <span class="aht-header-badge">Daily Average</span>
+          </div>
+          <div class="aht-avg">
+            <div class="aht-avg-label">Average Handling Time</div>
+            <div class="aht-avg-value" id="ahtAvgValue">0:00</div>
+            <div class="aht-avg-sub" id="ahtAvgSub">0 calls logged today</div>
+          </div>
+          <div class="aht-input-row">
+            <div class="aht-input-col">
+              <label>Minutes</label>
+              <input type="number" id="ahtMinInput" min="0" step="0.5" placeholder="e.g. 7.5"/>
+            </div>
+            <div class="aht-input-col" style="flex:1.4">
+              <label>Remarks (Why longer?)</label>
+              <input type="text" id="ahtRemarkInput" placeholder="e.g. System slow / dispute"/>
+            </div>
+            <button class="aht-add-btn" id="ahtAddBtn">+ ADD</button>
+          </div>
+          <div class="aht-entries" id="ahtEntries"></div>
+          <div class="aht-footer">
+            <button class="aht-clear-btn" id="ahtClearBtn">Clear Today</button>
+            <span style="font-size:.6rem;color:var(--muted);font-family:var(--mono)" id="ahtDateLabel"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ P8: DEDICATED QUICK SNIPPETS TAB ══ -->
+    <section id="p8" class="panel">
+      <div class="ptop">
+        <div class="ptop-left"><span class="ptop-title">QUICK SNIPPETS</span><span class="ptop-badge">1-Click Copy</span></div>
+      </div>
+      <div class="snippets-page">
+        <!-- TOP TOOLBAR -->
+        <div class="snippets-top-bar">
+          <input type="text" id="snippetSearch" class="snippets-search" placeholder="🔍 Search your snippets…" style="padding:11px 15px;min-height:44px;border-radius:var(--radius);border:1px solid var(--field-border);background:var(--field);color:var(--text);outline:none;font-size:14px;"/>
+          <div class="snippets-categories" id="snippetCatFilters">
+            <button class="cat-chip on" data-cat="all">All</button>
+            <button class="cat-chip" data-cat="Technical">Technical</button>
+            <button class="cat-chip" data-cat="Escalation">Escalation</button>
+            <button class="cat-chip" data-cat="Billing">Billing &amp; Self-Care</button>
+            <button class="cat-chip" data-cat="Custom">My Custom</button>
+          </div>
+        </div>
+
+        <!-- ADD SNIPPET CARD -->
+        <div class="snippet-add-card">
+          <div style="font-size:.68rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent);">+ Add Custom Snippet</div>
+          <div class="sac-row">
+            <input type="text" id="newSnippetText" placeholder="Enter your phrase, remarks, or template here…" style="flex:2;padding:11px 14px;font-size:13.5px;min-height:44px;border-radius:7px;border:1px solid var(--field-border);background:var(--card);color:var(--text);outline:none;"/>
+            <select id="newSnippetCat" style="width:140px;padding:10px 12px;font-size:13px;min-height:44px;border-radius:7px;border:1px solid var(--field-border);background:var(--card);color:var(--text);">
+              <option value="Technical">Technical</option>
+              <option value="Escalation">Escalation</option>
+              <option value="Billing">Billing</option>
+              <option value="Custom" selected>Custom</option>
+            </select>
+            <button class="btn-gen" id="newSnippetBtn" style="font-size:.9rem;padding:9px 18px;min-height:44px;white-space:nowrap">+ Save Snippet</button>
+          </div>
+        </div>
+
+        <!-- SNIPPETS GRID -->
+        <div class="snippets-grid" id="snippetsGrid"></div>
+      </div>
+    </section>
+
+    <!-- ══ P7: HISTORY & CALLS ══ -->
+    <section id="p7" class="panel">
+      <div class="ptop">
+        <div class="ptop-left"><span class="ptop-title">NOTE HISTORY &amp; CALLS</span><span class="ptop-badge">Shift Log</span></div>
+        <button class="btn-gen" id="p7EndShiftBtn" style="font-size:.78rem;padding:6px 14px;letter-spacing:1px;background:#c4000d">🏁 END SHIFT &amp; RESET</button>
+      </div>
+      <div class="shift-stats-bar">
+        <div class="ss-item"><span>Calls Today:</span><strong id="shiftTotalCalls">0</strong></div>
+        <div class="ss-item"><span>Tech:</span><strong id="shiftTechCalls">0</strong></div>
+        <div class="ss-item"><span>Non-Tech:</span><strong id="shiftNonTechCalls">0</strong></div>
+        <div class="ss-item"><span>Recon:</span><strong id="shiftReconCalls">0</strong></div>
+        <div class="ss-item"><span>Follow-Up:</span><strong id="shiftFollowUpCalls">0</strong></div>
+        <div class="ss-item"><span>Rebate:</span><strong id="shiftRebateCalls">0</strong></div>
+      </div>
+      <div style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+        <div class="history-search"><input type="text" id="historySearch" placeholder="🔍 Search past notes by keyword, case#, or type…"/></div>
+        <div class="history-list" id="historyList"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   THEME MANAGEMENT
+═══════════════════════════════════════════ */
+const tSw=document.getElementById('tSw'),tLbl=document.getElementById('tLbl');
+function applyTheme(m){
+  document.body.setAttribute('data-theme',m);
+  tLbl.textContent=m==='light'?'Light':'Dark';
+  tSw.checked=m==='light';
+  localStorage.setItem('SS5_theme',m);
+}
+(()=>{const s=localStorage.getItem('SS5_theme');applyTheme(s||(window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark'))})();
+tSw.addEventListener('change',()=>applyTheme(tSw.checked?'light':'dark'));
+
+/* ═══ TOOLS LAUNCHER ═══ */
+const tsel=document.getElementById('toolsSel');
+tsel.addEventListener('change',()=>{const u=tsel.value;if(!u)return;const w=window.open(u,'_blank','noopener');if(w)w.opener=null;tsel.selectedIndex=0});
+
+/* ═══ PANEL NAVIGATION ═══ */
+const navs=Array.from(document.querySelectorAll('.nav'));
+const panels={
+  p1:document.getElementById('p1'),
+  p2:document.getElementById('p2'),
+  p3:document.getElementById('p3'),
+  p4:document.getElementById('p4'),
+  p5:document.getElementById('p5'),
+  p6:document.getElementById('p6'),
+  p7:document.getElementById('p7'),
+  p8:document.getElementById('p8')
+};
+let lastPanelBeforeNotepad='p1';
+function currentGeneratedOutputText(){
+  const pid=activePid();
+  if(!pid||pid==='p6')return '';
+  const outId=`out${pid.replace('p','')}`;
+  const pre=document.getElementById(outId);
+  if(!pre)return '';
+  const text=(pre.textContent||'').trim();
+  return text && !pre.classList.contains('ph') ? text : '';
+}
+function switchPanel(id){
+  const currentActive=activePid();
+  if(id==='p6' && currentActive && currentActive!=='p6') lastPanelBeforeNotepad=currentActive;
+
+  navs.forEach(x=>x.classList.remove('on'));
+  const nav=document.querySelector(`.nav[data-p="${id}"]`);
+  if(nav)nav.classList.add('on');
+  Object.values(panels).forEach(p=>{if(p)p.classList.remove('on')});
+  if(panels[id])panels[id].classList.add('on');
+
+  // Auto-close sidebar drawer on narrow screens (<960px)
+  if(window.innerWidth<=960){
+    document.body.classList.add('sb-hidden');
+  }
+}
+navs.forEach(n=>n.addEventListener('click',()=>switchPanel(n.getAttribute('data-p'))));
+
+const quickNoteOverlay=document.getElementById('quickNoteOverlay');
+const quickNoteText=document.getElementById('quickNoteText');
+const topNotepadBtn=document.getElementById('topNotepadBtn');
+const quickNoteCloseBtn=document.getElementById('quickNoteClose');
+const quickNoteWindowCloseBtn=document.getElementById('quickNoteCloseBtn');
+const quickNoteOpenReal=document.getElementById('quickNoteOpenReal');
+const notepadBackBtn=document.getElementById('notepadBackBtn');
+
+function syncQuickNoteToNotepad(){
+  if(!quickNoteText || !noteArea) return;
+  noteArea.value = quickNoteText.value;
+  triggerAutoSave();
+}
+
+function openQuickNote(){
+  if(!quickNoteText || !noteArea) return;
+  quickNoteText.value = noteArea.value || '';
+  if(quickNoteOverlay){quickNoteOverlay.classList.add('open');}
+  setTimeout(()=>quickNoteText.focus(),80);
+}
+function closeQuickNote(){
+  if(quickNoteText && noteArea){
+    noteArea.value = quickNoteText.value;
+    triggerAutoSave();
+  }
+  if(quickNoteOverlay){quickNoteOverlay.classList.remove('open');}
+  if(quickNoteText){quickNoteText.blur();}
+}
+if(topNotepadBtn){topNotepadBtn.addEventListener('click',openQuickNote);}
+if(quickNoteCloseBtn){quickNoteCloseBtn.addEventListener('click',closeQuickNote);}
+if(quickNoteWindowCloseBtn){quickNoteWindowCloseBtn.addEventListener('click',closeQuickNote);}
+if(quickNoteOpenReal){quickNoteOpenReal.addEventListener('click',()=>{closeQuickNote();switchPanel('p6');});}
+if(quickNoteText){quickNoteText.addEventListener('input',syncQuickNoteToNotepad);}
+if(quickNoteOverlay){quickNoteOverlay.addEventListener('click',e=>{if(e.target===quickNoteOverlay)closeQuickNote();});}
+if(notepadBackBtn){notepadBackBtn.addEventListener('click',()=>switchPanel(lastPanelBeforeNotepad||'p1'));}
+
+/* ═══ HAMBURGER & BACKDROP ═══ */
+const hamburgerBtn=document.getElementById('hamburgerBtn');
+const sbBackdrop=document.getElementById('sbBackdrop');
+if(hamburgerBtn){hamburgerBtn.addEventListener('click',()=>document.body.classList.toggle('sb-hidden'));}
+if(sbBackdrop){sbBackdrop.addEventListener('click',()=>document.body.classList.add('sb-hidden'));}
+
+/* ═══ RESPONSIVE VIEW SWITCH (FORM <-> OUTPUT ON MOBILE/HALF SCREEN) ═══ */
+document.querySelectorAll('.view-switch').forEach(vs=>{
+  const btns=vs.querySelectorAll('.view-btn');
+  btns.forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      btns.forEach(b=>b.classList.remove('on'));
+      btn.classList.add('on');
+      const target=btn.dataset.target;
+      const panel=btn.closest('.panel');
+      const split=panel.querySelector('.split');
+      const fp=panel.querySelector('.fp');
+      const op=panel.querySelector('.op');
+      if(target==='out'&&op){
+        op.scrollIntoView({behavior:'smooth'});
+      }else if(fp){
+        fp.scrollIntoView({behavior:'smooth'});
+      }
+    });
+  });
+});
+
+/* ═══ HELPERS ═══ */
+const $=id=>document.getElementById(id);
+const v=id=>{const el=$(id);return el?(el.value||'').trim():''};
+const vr=name=>{const el=document.querySelector(`input[name="${name}"]:checked`);return el?el.value:''};
+function nowStamp(){const d=new Date(),p=n=>String(n).padStart(2,'0');return`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`}
+function item(label,val){return val?`${label}${val}`:''}
+function pushSection(lines,title,items){const ne=items.filter(Boolean);if(ne.length){if(lines.length)lines.push('');if(title)lines.push(title);lines.push(...ne)}}
+function activePid(){return document.querySelector('.panel.on')?.id||''}
+
+function setOut(id,lines,sId){
+  const pre=$(id);
+  pre.textContent=lines.join('\n');
+  pre.classList.remove('ph');
+  pre.contentEditable=true;
+  pre.classList.add('editable');
+  $(sId).textContent='Generated ✔';
+  const modalPre=$('modalPre');
+  if($('outputModal').classList.contains('open')){
+    modalPre.textContent=pre.textContent;
+    modalPre.classList.remove('ph');
+  }
+  // If on narrow screen, automatically scroll down to generated output
+  if(window.innerWidth<=960){
+    const op=pre.closest('.op');
+    if(op)op.scrollIntoView({behavior:'smooth'});
+  }
+}
+
+/* ═══════════════════════════════════════════
+   GENERATORS (PRESERVED EXACTLY)
+═══════════════════════════════════════════ */
+function genTech(){
+  const auth = v('auth1Sel'), lines = [];
+  const cinf     = v('infCat1');
+  const concern  = v('concern1');
+  const caseNum  = v('caseNumber1');
+  const cLine    = ['C', cinf ? `INF-${cinf}` : '', concern, caseNum ? `Case#: ${caseNum}` : ''].filter(Boolean).join('-');
+  if (cLine) lines.push(cLine);
+  const offer    = v('offer1');
+  const upsell   = v('upsell1');
+  if (offer)  lines.push(`UPSELL OFFER: ${offer}`);
+  if (upsell) lines.push(`UPSELL STATUS: ${upsell}`);
+  if (auth)             lines.push(`Customer Authentication: ${auth}`);
+  const spokeTo = v('spokeTo1');
+  if (spokeTo)          lines.push(`A - Spoke to ${spokeTo}`);
+  const wocas = v('wocas1b');
+  if (wocas) lines.push(`WOCAS: ${wocas}`);
+  if (v('acctStatus1')) lines.push(`Acc status: ${v('acctStatus1')}`);
+  if (v('outage1'))     lines.push(`Outage: ${v('outage1')}`);
+  if (v('ft1'))         lines.push(`FT/TT#: ${v('ft1')}`);
+  if (v('soNumber1'))   lines.push(`SO/PT Number: ${v('soNumber1')}`);
+  if (v('nms1'))        lines.push(`NMS ONU STATUS: ${v('nms1')}`);
+  if (v('ip1'))         lines.push(`NMS IP ADD: ${v('ip1')}`);
+  if (v('vlan1'))       lines.push(`NMS VLAN: ${v('vlan1')}`);
+  if (v('rxPower1'))    lines.push(`RX POWER: ${v('rxPower1')}`);
+  if (v('cvStatus1'))   lines.push(`CV: ${v('cvStatus1')}`);
+  if (v('dms1'))        lines.push(`DMS: ${v('dms1')}`);
+  const modemParts = [v('onuStatus1'), v('modem1') ? `Power: ${v('modem1')}` : '', v('modem2') ? `PON: ${v('modem2')}` : '', v('modem3') ? `LOS: ${v('modem3')}` : ''].filter(Boolean);
+  if (modemParts.length) lines.push(`Modem Lights: ${modemParts.join(' | ')}`);
+  if (v('onuSerial1'))  lines.push(`ONU S/N: ${v('onuSerial1')}`);
+  if (v('opt821'))      lines.push(`Option82: ${v('opt821')}`);
+  if (v('remarks1'))    lines.push(`Remarks/Action Taken: ${v('remarks1')}`);
+  if (v('scc1'))        lines.push(`SELF-CARE OFFERED: ${v('scc1')}`);
+  if (v('contactPerson1'))  lines.push(`Contact Person: ${v('contactPerson1')}`);
+  if (v('contactNumber1'))  lines.push(`Contact Number: ${v('contactNumber1')}`);
+  if (v('availability1'))   lines.push(`Availability: ${v('availability1')}`);
+  if (v('landmark1'))       lines.push(`Landmark: ${v('landmark1')}`);
+  if (v('physAddr1'))       lines.push(`Physical Address: ${v('physAddr1')}`);
+  if (lines.length) lines.push('');
+  lines.push(`Timestamp: ${nowStamp()}`);
+  setOut('out1', lines, 'stamp1');
+}
+
+function genNonTech(){
+  const lines = [];
+  [item('C-INF-', v('infCat2')),item('Case number: ', v('caseNumber2')),item('Concern: ', v('concern2')),item('Inquiry: ', v('inquiry2')),item('Request: ', v('request2')),item('Follow Up: ', v('followUp2'))].filter(Boolean).forEach(i => lines.push(i));
+  const up = [item('UPSELL: ', v('upsell2')),item('Selected OFFER: ', v('offer2')),item('WOCAS: ', v('wocas2'))].filter(Boolean);
+  if (up.length) {lines.push(...up);}
+  [item('Customer Name: ', v('custName2')),item('Account Number: ', v('acctNum2'))].filter(Boolean).forEach(i => lines.push(i));
+  const ai = [item('Customer Authentication: ', v('authSel2'))].filter(Boolean);
+  if (ai.length) {if (lines.length) lines.push('');lines.push(...ai);}
+  pushSection(lines,'A:',[item('SO Number: ', v('soNumber2')),item('FT/TT#: ', v('ft2n')),item('Account Status: ', v('acctStatus2')),item('Status: ', v('outage2'))].filter(Boolean));
+  const tail = [item('Self Care Offered: ', v('scc2')),item('Remarks(Action taken): ', v('remarks2n'))].filter(Boolean);
+  if (tail.length) {if (lines.length) lines.push('');lines.push(...tail);}
+  if (lines.length) lines.push('');
+  lines.push(`Timestamp: ${nowStamp()}`);
+  setOut('out2', lines, 'stamp2');
+}
+
+function genReco(){
+  const lines = [];
+  const inf = v('infCat3');
+  if (inf) {lines.push(`C-INF-${inf}`);}
+  const cn = v('recoCust'), ac = v('recoAcct');
+  if (cn || ac) {const l = cn ? `Case Number: ${cn}` : '';const r = ac ? `Concern: ${ac}` : '';lines.push(l + (l && r ? ' | ' : '') + r);}
+  const up = [item('UPSELL: ', v('upsell3')),item('Selected OFFER: ', v('offer3')),item('WOCAS: ', v('recoWocas'))].filter(Boolean);
+  if (up.length) {if (lines.length) lines.push('');lines.push(...up);}
+  pushSection(lines,'A:',[item('Customer Authentication: ', v('recoAuth')),item('Contact number: ', v('recoContact')),item('Email Address: ', v('recoEmail')),item('Last mode of payment: ', v('recoMOP')),item('Physical address: ', v('recoAddr')),item('Account Status: ', v('recoAcctStatus'))].filter(Boolean));
+  const bill = [item('INFORMED DUE DATE: ', v('recoDue')),item('OUTSTANDING BALANCE: ', v('recoOB')),item('COVERED PERIOD: ', v('recoCovered')),item('Self Care Offered: ', v('scc3')),item('REMARKS: ', v('recoRemarks')),item('Reconnection request: ', v('recoReq'))].filter(Boolean);
+  if (bill.length) {if (lines.length) lines.push('');lines.push(...bill);}
+  const pay = [item('AMOUNT PAID: ', v('recoAmt')),item('PAYMENT REF#: ', v('recoRef')),item('DATE OF PAYMENT: ', v('recoPayDate')),item('PAYMENT CHANNEL: ', v('recoChannel'))].filter(Boolean);
+  if (pay.length) {if (lines.length) lines.push('');lines.push(...pay);}
+  if (lines.length) lines.push('');
+  lines.push(`Timestamp: ${nowStamp()}`);
+  setOut('out3', lines, 'stamp3');
+}
+
+function genFollowUp(){
+  const lines = [];
+  const infType = v('infType4');
+  const domain  = v('vendor4');
+  const headerParts = ['INF', infType, domain ? `(${domain})` : ''].filter(Boolean);
+  if (headerParts.length > 1) lines.push(headerParts.join(' - '));
+  if (v('ffupwocas4'))      lines.push(`WOCAS: ${v('ffupwocas4')}`);
+  if (v('followUpCount4'))  lines.push(`FOLLOW UP COUNT: ${v('followUpCount4')}`);
+  if (v('caseAge4'))        lines.push(`CASE AGE: ${v('caseAge4')}`);
+  if (v('caseSla4'))        lines.push(`CASE SLA: ${v('caseSla4')}`);
+  if (v('ftWorkgroup4'))    lines.push(`CASE WG: ${v('ftWorkgroup4')}`);
+  if (v('remarks4'))        lines.push(`REMARKS/Actions Taken: ${v('remarks4')}`);
+  if (v('cbr4'))            lines.push(`CBR: ${v('cbr4')}`);
+  if (v('slaOffer4'))       lines.push(`(FOR BEYOND SLA) ALS OFFER: ${v('slaOffer4')}`);
+  if (v('offer4'))          lines.push(`UPSELL OFFER: ${v('offer4')}`);
+  if (v('upsell4'))         lines.push(`UPSELL STATUS: ${v('upsell4')}`);
+  if (v('scc4'))            lines.push(`SELF-CARE OFFERED: ${v('scc4')}`);
+  if (v('dateEscalated4'))  lines.push(`DATE ESCALATED: ${v('dateEscalated4')}`);
+  if (v('reportedBy4'))     lines.push(`Reported By: ${v('reportedBy4')}`);
+  if (v('accountNumber4'))  lines.push(`Account Number: ${v('accountNumber4')}`);
+  if (v('caseNumber4'))     lines.push(`Case Number: ${v('caseNumber4')}`);
+  if (v('ft4'))             lines.push(`FT/TT#: ${v('ft4')}`);
+  if (v('followUp4'))       lines.push(`FOLLOW-UP: ${v('followUp4')}`);
+  if (lines.length) lines.push('');
+  lines.push(`Timestamp: ${nowStamp()}`);
+  setOut('out4', lines, 'stamp4');
+}
+
+function genRebate(){
+  const lines = [];
+  [item('C-INF-', v('infCat5')),item('Concern: ', v('concern5'))].filter(Boolean).forEach(i => lines.push(i));
+  const up = [item('UPSELL: ', v('upsell5')),item('OFFER: ', v('offer5')),item('WOCAS: ', v('wocas5'))].filter(Boolean);
+  if (up.length) {if (lines.length) lines.push('');lines.push(...up);}
+  [item('A: ', v('a5')),item('SF Case Number/Call ID: ', v('sfCase5')),item('Account Number: ', v('acc5')),item('Mobile Number: ', v('mobile5')),item('CEP/FT Case Number: ', v('cepft5')),item('Covered dates: ', v('covered5')),item('Self Care Offered: ', v('scc5'))].filter(Boolean).forEach(i => lines.push(i));
+  if (lines.length) lines.push('');
+  lines.push(`Timestamp: ${nowStamp()}`);
+  setOut('out5', lines, 'stamp5');
+}
+
+function genActive(){const id=activePid();if(id==='p1')genTech();else if(id==='p2')genNonTech();else if(id==='p3')genReco();else if(id==='p4')genFollowUp();else if(id==='p5')genRebate()}
+
+/* ═══ COPY & CLEAR ═══ */
+function copyText(txt,stampEl){
+  if(!txt||!txt.trim())return alert('Nothing to copy yet.');
+  navigator.clipboard.writeText(txt).then(()=>{
+    const old=stampEl.textContent;stampEl.textContent='Copied ✔';
+    setTimeout(()=>stampEl.textContent=old,1500);
+  }).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();
+    const old=stampEl.textContent;stampEl.textContent='Copied ✔';setTimeout(()=>stampEl.textContent=old,1500);
+  });
+}
+function wireCopy(btnId,outId,sId){$(btnId).addEventListener('click',e=>{e.preventDefault();const pre=$(outId);copyText(pre.textContent,$(sId))})}
+
+function wireClear(btnId,msg,panelSel,outId,sId){
+  $(btnId).addEventListener('click',e=>{
+    e.preventDefault();
+    if(!window.confirm(msg||'Clear all fields?'))return;
+    document.querySelectorAll(`${panelSel} input[type=text],${panelSel} input[type=email],${panelSel} input[type=tel],${panelSel} input[type=number],${panelSel} textarea,${panelSel} select`).forEach(el=>{if(el.type==='radio')el.checked=false;else el.value=''});
+    document.querySelectorAll(`${panelSel} input[type=radio]`).forEach(el=>el.checked=false);
+    const pre=$(outId);pre.textContent='Fill the form and click Generate.';pre.classList.add('ph');pre.classList.remove('editable');pre.contentEditable=false;$(sId).textContent='';
+    document.querySelectorAll(`${panelSel} .sd-wrap`).forEach(w=>{const disp=w.querySelector('.sd-display');if(disp){disp.textContent='';disp.classList.add('ph')}});
+  });
+}
+
+/* ═══ UPSELL VALIDATION ═══ */
+function checkUpsell(n){
+  const uSel=$('upsell'+n), oSel=$('offer'+n), err=$('upsellErr'+n);
+  const uOk=uSel&&uSel.value.trim(), oOk=oSel&&oSel.value.trim();
+  if(uOk&&oOk){if(err)err.classList.remove('show');uSel.classList.remove('upsell-missing');oSel.classList.remove('upsell-missing');return true}
+  if(err){err.classList.remove('show');void err.offsetWidth;err.classList.add('show');err.scrollIntoView({behavior:'smooth',block:'nearest'})}
+  if(!uOk&&uSel){uSel.classList.add('upsell-missing');setTimeout(()=>uSel.classList.remove('upsell-missing'),600)}
+  if(!oOk&&oSel){oSel.classList.add('upsell-missing');setTimeout(()=>oSel.classList.remove('upsell-missing'),600)}
+  return false;
+}
+
+/* ═══════════════════════════════════════════
+   CALL COUNTER & HISTORY
+═══════════════════════════════════════════ */
+function todayKey(){return new Date().toISOString().slice(0,10)}
+function getCallCounts(){
+  const k='SS6_callCounts_'+todayKey();
+  return JSON.parse(localStorage.getItem(k)||'{"Tech":0,"NonTech":0,"Recon":0,"FollowUp":0,"Rebate":0}');
+}
+function saveCallCounts(c){localStorage.setItem('SS6_callCounts_'+todayKey(),JSON.stringify(c))}
+
+function updateCallCounterUI(){
+  const c=getCallCounts();
+  const total=Object.values(c).reduce((a,b)=>a+b,0);
+  if($('ccTotal')) $('ccTotal').textContent=total;
+  if($('ccTech')) $('ccTech').textContent=c.Tech;
+  if($('ccNonTech')) $('ccNonTech').textContent=c.NonTech;
+  if($('ccRecon')) $('ccRecon').textContent=c.Recon;
+  if($('ccFollowUp')) $('ccFollowUp').textContent=c.FollowUp;
+  if($('ccRebate')) $('ccRebate').textContent=c.Rebate;
+
+  if($('shiftTotalCalls')) $('shiftTotalCalls').textContent=total;
+  if($('shiftTechCalls')) $('shiftTechCalls').textContent=c.Tech;
+  if($('shiftNonTechCalls')) $('shiftNonTechCalls').textContent=c.NonTech;
+  if($('shiftReconCalls')) $('shiftReconCalls').textContent=c.Recon;
+  if($('shiftFollowUpCalls')) $('shiftFollowUpCalls').textContent=c.FollowUp;
+  if($('shiftRebateCalls')) $('shiftRebateCalls').textContent=c.Rebate;
+}
+
+function handleEndShift(){
+  const c=getCallCounts();
+  const total=Object.values(c).reduce((a,b)=>a+b,0);
+  const msg=`End Shift & Reset Call Numbers?\n\nShift Summary:\n• Total Calls: ${total}\n• Tech Notes: ${c.Tech}\n• Non-Tech Notes: ${c.NonTech}\n• Reconnections: ${c.Recon}\n• Follow-Up Notes: ${c.FollowUp}\n• Rebates: ${c.Rebate}\n\nClick OK to reset the call numbers to 0 for your next shift.`;
+  if(!confirm(msg)) return;
+
+  const emptyCounts={"Tech":0,"NonTech":0,"Recon":0,"FollowUp":0,"Rebate":0};
+  saveCallCounts(emptyCounts);
+  updateCallCounterUI();
+  alert(`🏁 Shift ended! Call numbers have been reset to 0.`);
+}
+
+function incrementCallCount(type){
+  const c=getCallCounts();c[type]=(c[type]||0)+1;saveCallCounts(c);updateCallCounterUI();
+}
+
+function addToHistory(type,text){
+  const history=JSON.parse(localStorage.getItem('SS6_history')||'[]');
+  history.unshift({type,text,timestamp:nowStamp(),id:Date.now()});
+  if(history.length>50)history.length=50;
+  localStorage.setItem('SS6_history',JSON.stringify(history));
+  renderHistory();
+}
+
+function wireGen(btnId,n,genFn,type){
+  $(btnId).addEventListener('click',e=>{
+    e.preventDefault();
+    if(checkUpsell(n)){genFn();incrementCallCount(type);addToHistory(type,$(('out'+n)).textContent)}
+  });
+}
+wireGen('gen1',1,genTech,'Tech');
+wireCopy('copy1','out1','stamp1');
+wireClear('clear1','Have you notated this to SF/ESA, FUSE and CEP? Proceed?','#p1','out1','stamp1');
+
+wireGen('gen2',2,genNonTech,'NonTech');
+wireCopy('copy2','out2','stamp2');
+wireClear('clear2','Have you notated this to SF/ESA and FUSE? Proceed?','#p2','out2','stamp2');
+
+wireGen('gen3',3,genReco,'Recon');
+wireCopy('copy3','out3','stamp3');
+wireClear('clear3','Have you notated this to SF/ESA and FUSE? Proceed?','#p3','out3','stamp3');
+
+wireGen('gen4',4,genFollowUp,'FollowUp');
+wireCopy('copy4','out4','stamp4');
+wireClear('clear4','Have you notated this to SF/ESA, FUSE and CEP? Proceed?','#p4','out4','stamp4');
+
+wireGen('gen5',5,genRebate,'Rebate');
+wireCopy('copy5','out5','stamp5');
+wireClear('clear5','Have you notated this to SF/ESA and FUSE? Proceed?','#p5','out5','stamp5');
+
+[1,2,3,4,5].forEach(n=>{
+  const uSel=$('upsell'+n),oSel=$('offer'+n),err=$('upsellErr'+n);
+  if(uSel)uSel.addEventListener('change',()=>{if(err&&uSel.value&&oSel&&oSel.value)err.classList.remove('show')});
+  if(oSel)oSel.addEventListener('change',()=>{if(err&&uSel&&uSel.value&&oSel.value)err.classList.remove('show')});
+});
+
+/* ═══════════════════════════════════════════
+   SEARCHABLE DROPDOWNS & ENTER AUTO-JUMP
+═══════════════════════════════════════════ */
+function jumpToNextField(currentEl){
+  const activePanel=currentEl.closest('.panel.on');
+  if(!activePanel)return;
+
+  const focusable=Array.from(activePanel.querySelectorAll('.fp input[type=text], .fp input[type=email], .fp input[type=tel], .fp input[type=number], .fp .sd-display, .fp textarea'))
+    .filter(el=>!el.disabled&&el.offsetParent!==null&&!el.closest('.sd-panel'));
+
+  let idx=focusable.indexOf(currentEl);
+  if(idx===-1&&currentEl.closest('.sd-wrap')){
+    idx=focusable.indexOf(currentEl.closest('.sd-wrap').querySelector('.sd-display'));
+  }
+
+  if(idx!==-1&&idx<focusable.length-1){
+    const nextEl=focusable[idx+1];
+    if(nextEl){
+      nextEl.focus();
+      const target=nextEl.closest('.sd-wrap')||nextEl;
+      target.scrollIntoView({behavior:'smooth',block:'center'});
+      if(nextEl.classList.contains('sd-display')){
+        nextEl.click();
+      }
+    }
+  }else if(idx===focusable.length-1){
+    // Reached last input field -> trigger Generate
+    const genBtn=activePanel.querySelector('.btn-gen');
+    if(genBtn)genBtn.click();
+  }
+}
+
+// Global auto-center scrolling whenever any input inside form is focused
+document.addEventListener('focusin',e=>{
+  const t=e.target;
+  if(!t)return;
+  if(t.closest&&t.closest('.fp')){
+    const target=t.closest('.sd-wrap')||t;
+    target.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+});
+
+function initSearchableDropdowns(){
+  document.querySelectorAll('select').forEach(sel=>{
+    if(sel.id==='toolsSel'||sel.id==='newSnippetCat'||sel.closest('.sd-wrap'))return;
+
+    const wrap=document.createElement('div');
+    wrap.className='sd-wrap';
+    sel.parentNode.insertBefore(wrap,sel);
+    wrap.appendChild(sel);
+
+    const disp=document.createElement('div');
+    disp.className='sd-display ph';
+    disp.tabIndex=0;
+    disp.textContent=sel.options[sel.selectedIndex]?.text||'';
+    if(!sel.value)disp.classList.add('ph');
+    else disp.classList.remove('ph');
+    wrap.insertBefore(disp,sel);
+
+    const panel=document.createElement('div');
+    panel.className='sd-panel';
+
+    const search=document.createElement('input');
+    search.className='sd-search';
+    search.type='text';
+    search.placeholder='Type to search…';
+    panel.appendChild(search);
+
+    const list=document.createElement('div');
+    list.className='sd-list';
+    panel.appendChild(list);
+
+    wrap.appendChild(panel);
+
+    function buildOpts(){
+      list.innerHTML='';
+      Array.from(sel.options).forEach((opt,i)=>{
+        if(i===0&&!opt.value)return;
+        const div=document.createElement('div');
+        div.className='sd-opt';
+        if(opt.value===sel.value)div.classList.add('sel');
+        div.textContent=opt.text;
+        div.dataset.idx=i;
+        div.addEventListener('click',()=>{
+          sel.selectedIndex=i;
+          sel.dispatchEvent(new Event('change',{bubbles:true}));
+          disp.textContent=opt.text;
+          disp.classList.remove('ph');
+          closePanel();
+          jumpToNextField(disp);
+        });
+        list.appendChild(div);
+      });
+    }
+
+    function openPanel(){
+      buildOpts();
+      search.value='';
+      panel.classList.add('open');
+      disp.classList.add('open');
+      setTimeout(()=>search.focus(),50);
+    }
+    function closePanel(){
+      panel.classList.remove('open');
+      disp.classList.remove('open');
+    }
+
+    disp.addEventListener('click',e=>{
+      e.stopPropagation();
+      document.querySelectorAll('.sd-panel.open').forEach(p=>{if(p!==panel){p.classList.remove('open');p.previousElementSibling?.classList.remove('open')}});
+      if(panel.classList.contains('open'))closePanel();else openPanel();
+    });
+
+    disp.addEventListener('keydown',e=>{
+      if(e.key==='Enter'||e.key===' '){
+        e.preventDefault();
+        openPanel();
+      }
+    });
+
+    search.addEventListener('input',()=>{
+      const q=search.value.toLowerCase();
+      list.querySelectorAll('.sd-opt').forEach(o=>{
+        o.classList.toggle('hidden',!o.textContent.toLowerCase().includes(q));
+      });
+      const visible=list.querySelectorAll('.sd-opt:not(.hidden)');
+      let empty=list.querySelector('.sd-empty');
+      if(visible.length===0){
+        if(!empty){empty=document.createElement('div');empty.className='sd-empty';empty.textContent='No matches found';list.appendChild(empty)}
+      }else if(empty){empty.remove()}
+    });
+
+    search.addEventListener('keydown',e=>{
+      if(e.key==='Escape')closePanel();
+      if(e.key==='Enter'){
+        e.preventDefault();
+        const first=list.querySelector('.sd-opt:not(.hidden)');
+        if(first){
+          first.click();
+        }else{
+          closePanel();
+          jumpToNextField(disp);
+        }
+      }
+    });
+
+    sel.addEventListener('change',()=>{
+      const opt=sel.options[sel.selectedIndex];
+      if(opt&&opt.value){disp.textContent=opt.text;disp.classList.remove('ph')}
+      else{disp.textContent='';disp.classList.add('ph')}
+    });
+  });
+
+  document.addEventListener('click',e=>{
+    if(!e.target.closest('.sd-wrap')){
+      document.querySelectorAll('.sd-panel.open').forEach(p=>p.classList.remove('open'));
+      document.querySelectorAll('.sd-display.open').forEach(d=>d.classList.remove('open'));
+    }
+  });
+}
+initSearchableDropdowns();
+
+/* ═══════════════════════════════════════════
+   GLOBAL ENTER KEY NAVIGATION
+═══════════════════════════════════════════ */
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter')return;
+  const activeEl=document.activeElement;
+  if(!activeEl)return;
+
+  // Ignore notepad, history, or snippet inputs
+  if(activeEl.id==='notepadArea'||activeEl.id==='historySearch'||activeEl.id==='snippetSearch'||activeEl.id==='sheetTitleInput'||activeEl.id==='newSnippetText') return;
+  if(activeEl.classList.contains('sd-search')) return; // handled by dropdown search
+
+  const activePanel=activeEl.closest('.panel.on');
+  if(!activePanel)return;
+
+  const isInput=activeEl.matches('input[type=text], input[type=email], input[type=tel], input[type=number]');
+  const isTextarea=activeEl.tagName==='TEXTAREA';
+  const isSdDisplay=activeEl.classList.contains('sd-display');
+
+  if(isInput||isSdDisplay||(isTextarea&&!e.shiftKey)){
+    e.preventDefault();
+    jumpToNextField(activeEl);
+  }
+});
+
+/* ═══════════════════════════════════════════
+   NOTEPAD & EDITABLE SHEET TITLES
+═══════════════════════════════════════════ */
+let currentSheet=1;
+let sheetCount=parseInt(localStorage.getItem('SS6_sheetCount'))||4;
+const noteArea=document.getElementById('notepadArea');
+const sheetTabsContainer=document.getElementById('sheetTabs');
+const sheetTitleInput=document.getElementById('sheetTitleInput');
+
+function getSheetName(n){return localStorage.getItem('SS6_sheetName_'+n)||'Sheet '+n}
+function setSheetName(n,name){
+  localStorage.setItem('SS6_sheetName_'+n,name);
+  renderSheetTabs();
+}
+
+function renderSheetTabs(){
+  sheetTabsContainer.innerHTML='';
+  for(let i=1;i<=sheetCount;i++){
+    const tab=document.createElement('div');
+    tab.className='sheet-tab'+(i===currentSheet?' on':'');
+    tab.dataset.sheet=i;
+    tab.title=`Sheet ${i}: ${getSheetName(i)}`;
+
+    const titleSpan=document.createElement('span');
+    titleSpan.className='sheet-tab-txt';
+    titleSpan.textContent=getSheetName(i);
+
+    const renBtn=document.createElement('span');
+    renBtn.className='sheet-tab-ren';
+    renBtn.textContent='✏️';
+    renBtn.title='Rename Sheet';
+
+    tab.appendChild(titleSpan);
+    tab.appendChild(renBtn);
+
+    tab.addEventListener('click',e=>{
+      if(e.target===renBtn){
+        const promptName=prompt('Enter new title for Sheet '+i+':',getSheetName(i));
+        if(promptName&&promptName.trim()){
+          setSheetName(i,promptName.trim());
+          if(i===currentSheet)sheetTitleInput.value=promptName.trim();
+        }
+      }else{
+        loadSheet(i);
+      }
+    });
+
+    tab.addEventListener('dblclick',e=>{
+      e.stopPropagation();
+      const promptName=prompt('Enter new title for Sheet '+i+':',getSheetName(i));
+      if(promptName&&promptName.trim()){
+        setSheetName(i,promptName.trim());
+        if(i===currentSheet)sheetTitleInput.value=promptName.trim();
+      }
+    });
+
+    sheetTabsContainer.appendChild(tab);
+  }
+
+  // Add sheet button (up to 8 sheets)
+  if(sheetCount<8){
+    const addBtn=document.createElement('button');
+    addBtn.className='sheet-tab-add';
+    addBtn.textContent='+';
+    addBtn.title='Add Sheet';
+    addBtn.addEventListener('click',()=>{
+      sheetCount++;
+      localStorage.setItem('SS6_sheetCount',sheetCount);
+      loadSheet(sheetCount);
+    });
+    sheetTabsContainer.appendChild(addBtn);
+  }
+}
+
+function loadSheet(sheet){
+  currentSheet=parseInt(sheet);
+  renderSheetTabs();
+  noteArea.value=localStorage.getItem('notepad_sheet_'+currentSheet)||'';
+  sheetTitleInput.value=getSheetName(currentSheet);
+}
+
+// Rename via header input box
+sheetTitleInput.addEventListener('input',()=>{
+  const val=sheetTitleInput.value.trim()||'Sheet '+currentSheet;
+  localStorage.setItem('SS6_sheetName_'+currentSheet,val);
+  const curTab=document.querySelector(`.sheet-tab[data-sheet="${currentSheet}"] .sheet-tab-txt`);
+  if(curTab)curTab.textContent=val;
+});
+
+let autoSaveTimer=null;
+const autoSaveIndicator=document.getElementById('autoSaveIndicator');
+function triggerAutoSave(){
+  clearTimeout(autoSaveTimer);
+  autoSaveIndicator.textContent='Saving…';autoSaveIndicator.style.color='var(--muted)';
+  autoSaveTimer=setTimeout(()=>{
+    localStorage.setItem('notepad_sheet_'+currentSheet,noteArea.value);
+    autoSaveIndicator.textContent='Saved ✔';autoSaveIndicator.style.color='var(--accent)';
+    setTimeout(()=>{autoSaveIndicator.textContent=''},2000);
+  },600);
+}
+noteArea.addEventListener('input',triggerAutoSave);
+
+document.getElementById('clearNote').onclick=()=>{
+  if(!confirm(`Clear "${getSheetName(currentSheet)}"?`))return;
+  noteArea.value='';
+  localStorage.removeItem('notepad_sheet_'+currentSheet);
+  autoSaveIndicator.textContent='';
+};
+
+renderSheetTabs();
+setTimeout(()=>loadSheet(1),100);
+
+/* ═══════════════════════════════════════════
+   AHT TRACKER
+═══════════════════════════════════════════ */
+function getAhtData(){const k='SS6_aht_'+todayKey();return JSON.parse(localStorage.getItem(k)||'[]')}
+function saveAhtData(d){localStorage.setItem('SS6_aht_'+todayKey(),JSON.stringify(d))}
+
+function renderAht(){
+  const data=getAhtData();
+  const entries=$('ahtEntries');
+  entries.innerHTML='';
+  data.forEach((e,i)=>{
+    const div=document.createElement('div');
+    div.className='aht-entry';
+    div.innerHTML=`<span class="aht-entry-num">#${i+1}</span><span class="aht-entry-dur">${e.dur}m</span><span class="aht-entry-rem" title="${e.rem||''}">${e.rem||'—'}</span><button class="aht-entry-del" data-i="${i}" title="Remove">✕</button>`;
+    div.querySelector('.aht-entry-del').addEventListener('click',()=>{const d=getAhtData();d.splice(i,1);saveAhtData(d);renderAht()});
+    entries.appendChild(div);
+  });
+  if(data.length){
+    const total=data.reduce((s,e)=>s+parseFloat(e.dur),0);
+    const avg=total/data.length;
+    const mins=Math.floor(avg);
+    const secs=Math.round((avg-mins)*60);
+    $('ahtAvgValue').textContent=`${mins}:${String(secs).padStart(2,'0')}`;
+    $('ahtAvgSub').textContent=`${data.length} call${data.length>1?'s':''} · Total: ${total.toFixed(1)}m`;
+  }else{
+    $('ahtAvgValue').textContent='0:00';
+    $('ahtAvgSub').textContent='0 calls logged today';
+  }
+  $('ahtDateLabel').textContent=todayKey();
+}
+
+$('ahtAddBtn').addEventListener('click',()=>{
+  const dur=parseFloat($('ahtMinInput').value);
+  if(isNaN(dur)||dur<=0)return;
+  const rem=$('ahtRemarkInput').value.trim();
+  const data=getAhtData();
+  data.push({dur:dur.toFixed(1),rem,time:new Date().toLocaleTimeString('en-PH',{timeZone:'Asia/Manila',hour:'2-digit',minute:'2-digit'})});
+  saveAhtData(data);
+  $('ahtMinInput').value='';$('ahtRemarkInput').value='';
+  renderAht();
+});
+
+$('ahtMinInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('ahtAddBtn').click()});
+$('ahtRemarkInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('ahtAddBtn').click()});
+$('ahtClearBtn').addEventListener('click',()=>{if(!confirm('Clear all AHT entries for today?'))return;localStorage.removeItem('SS6_aht_'+todayKey());renderAht()});
+renderAht();
+
+/* ═══════════════════════════════════════════
+   DEDICATED QUICK SNIPPETS (TAB P8)
+═══════════════════════════════════════════ */
+const defaultSnippets=[];
+
+function getSnippets(){
+  const s=localStorage.getItem('SS6_snippets_custom');
+  return s?JSON.parse(s):[];
+}
+function saveSnippets(s){localStorage.setItem('SS6_snippets_custom',JSON.stringify(s))}
+
+let currentSnippetCat='all';
+let currentSnippetSearch='';
+
+function renderSnippetsGrid(){
+  const grid=$('snippetsGrid');
+  grid.innerHTML='';
+  const all=getSnippets();
+  const filtered=all.filter(item=>{
+    const matchCat=currentSnippetCat==='all'||item.cat===currentSnippetCat;
+    const matchQ=!currentSnippetSearch||item.text.toLowerCase().includes(currentSnippetSearch.toLowerCase());
+    return matchCat&&matchQ;
+  });
+
+  if(!filtered.length){
+    grid.innerHTML='<div style="grid-column:1/-1;padding:50px 20px;text-align:center;color:var(--muted);font-size:13.5px;font-style:italic;background:var(--field);border:1px dashed var(--field-border);border-radius:10px;">✂️ No snippets yet. Add your personal phrases or templates using the box above!</div>';
+    return;
+  }
+
+  filtered.forEach((snip,idx)=>{
+    const card=document.createElement('div');
+    card.className='snippet-card';
+    card.innerHTML=`
+      <div class="sc-top">
+        <span class="sc-cat">${snip.cat}</span>
+        <span class="sc-del" data-text="${snip.text}" title="Delete snippet">✕</span>
+      </div>
+      <div class="sc-text">${snip.text}</div>
+      <button class="sc-btn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy to Clipboard</button>
+    `;
+
+    const copyBtn=card.querySelector('.sc-btn');
+    copyBtn.addEventListener('click',()=>{
+      navigator.clipboard.writeText(snip.text).then(()=>{
+        copyBtn.innerHTML='✔ COPIED!';
+        copyBtn.classList.add('copied');
+        setTimeout(()=>{
+          copyBtn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy to Clipboard';
+          copyBtn.classList.remove('copied');
+        },1400);
+      });
+    });
+
+    const delBtn=card.querySelector('.sc-del');
+    if(delBtn){
+      delBtn.addEventListener('click',e=>{
+        e.stopPropagation();
+        if(!confirm('Delete this snippet?'))return;
+        const snips=getSnippets().filter(s=>s.text!==snip.text);
+        saveSnippets(snips);
+        renderSnippetsGrid();
+      });
+    }
+
+    grid.appendChild(card);
+  });
+}
+
+// Category filter chips
+$('snippetCatFilters').querySelectorAll('.cat-chip').forEach(chip=>{
+  chip.addEventListener('click',()=>{
+    $('snippetCatFilters').querySelectorAll('.cat-chip').forEach(c=>c.classList.remove('on'));
+    chip.classList.add('on');
+    currentSnippetCat=chip.dataset.cat;
+    renderSnippetsGrid();
+  });
+});
+
+$('snippetSearch').addEventListener('input',e=>{
+  currentSnippetSearch=e.target.value.trim();
+  renderSnippetsGrid();
+});
+
+$('newSnippetBtn').addEventListener('click',()=>{
+  const txt=$('newSnippetText').value.trim();
+  if(!txt)return;
+  const cat=$('newSnippetCat').value||'Custom';
+  const snips=getSnippets();
+  snips.push({cat,text:txt,isCustom:true});
+  saveSnippets(snips);
+  $('newSnippetText').value='';
+  renderSnippetsGrid();
+});
+$('newSnippetText').addEventListener('keydown',e=>{if(e.key==='Enter')$('newSnippetBtn').click()});
+renderSnippetsGrid();
+
+/* ═══════════════════════════════════════════
+   NOTE HISTORY
+═══════════════════════════════════════════ */
+function renderHistory(filter=''){
+  const list=$('historyList');
+  const history=JSON.parse(localStorage.getItem('SS6_history')||'[]');
+  list.innerHTML='';
+  const filtered=filter?history.filter(h=>h.text.toLowerCase().includes(filter.toLowerCase())||h.type.toLowerCase().includes(filter.toLowerCase())):history;
+  if(!filtered.length){
+    list.innerHTML='<div class="history-empty">No notes generated yet. Your history will appear here.</div>';return;
+  }
+  filtered.forEach(h=>{
+    const div=document.createElement('div');
+    div.className='history-item';
+    const preview=h.text.split('\n')[0]||'';
+    div.innerHTML=`<div class="history-item-top"><span class="history-item-badge">${h.type}</span><span class="history-item-time">${h.timestamp}</span></div><div class="history-item-preview">${preview}</div><div class="history-item-actions"><button class="hist-copy" title="Copy to clipboard">📋 Copy</button><button class="hist-view" title="View full note">👁 View</button></div>`;
+    div.querySelector('.hist-copy').addEventListener('click',e=>{
+      e.stopPropagation();
+      navigator.clipboard.writeText(h.text).then(()=>{
+        e.target.textContent='✔ Copied!';setTimeout(()=>e.target.textContent='📋 Copy',1200);
+      });
+    });
+    div.querySelector('.hist-view').addEventListener('click',e=>{
+      e.stopPropagation();
+      modalBadge.textContent=h.type;
+      modalPre.textContent=h.text;modalPre.classList.remove('ph');
+      modalStamp.textContent=h.timestamp;
+      currentExpandPanel=null;
+      modal.classList.add('open');
+    });
+    list.appendChild(div);
+  });
+}
+$('historySearch').addEventListener('input',e=>renderHistory(e.target.value));
+renderHistory();
+
+/* ═══════════════════════════════════════════
+   AUTO-FILL SPOKE TO
+═══════════════════════════════════════════ */
+let lastSpokeTo='';
+const spokeToField=$('spokeTo1');
+const autoFillBtn=$('autoFillSpoke1');
+spokeToField.addEventListener('input',()=>{lastSpokeTo=spokeToField.value.trim()});
+autoFillBtn.addEventListener('click',()=>{if(lastSpokeTo)spokeToField.value=lastSpokeTo});
+setInterval(()=>{
+  if(lastSpokeTo&&spokeToField.value.trim()!==lastSpokeTo&&!spokeToField.value.trim()){
+    autoFillBtn.textContent=`↻ ${lastSpokeTo}`;
+    autoFillBtn.classList.add('show');
+  }else{
+    autoFillBtn.classList.remove('show');
+  }
+},500);
+
+/* ═══════════════════════════════════════════
+   DATE / TIME & STOPWATCH
+═══════════════════════════════════════════ */
+function updateSidebarDateTime(){
+  const now=new Date();
+  $('sbTime').textContent=now.toLocaleTimeString('en-PH',{timeZone:'Asia/Manila'});
+  $('sbDate').textContent=now.toLocaleDateString('en-PH',{timeZone:'Asia/Manila',weekday:'short',year:'numeric',month:'short',day:'2-digit'});
+}
+setInterval(updateSidebarDateTime,1000);
+updateSidebarDateTime();
+
+let mode='sw',start=0,elapsed=0,remaining=0,interval=null,running=false;
+const display=document.getElementById('sbTimer');
+const input=document.getElementById('sbTimerInput');
+const hh=input.querySelector('.h'),mm=input.querySelector('.m'),ss=input.querySelector('.s');
+const btnStart=document.getElementById('sbStartBtn'),btnReset=document.getElementById('sbResetBtn');
+const btnSW=document.getElementById('sbModeSW'),btnTM=document.getElementById('sbModeTM');
+
+function format(ms){const t=Math.max(ms,0);const h=String(Math.floor(t/3600000)).padStart(2,'0');const m=String(Math.floor((t%3600000)/60000)).padStart(2,'0');const s=String(Math.floor((t%60000)/1000)).padStart(2,'0');const cs=String(Math.floor((t%1000)/10)).padStart(2,'0');return`${h}:${m}:${s}.${cs}`}
+function resetAll(){clearInterval(interval);start=0;elapsed=0;remaining=0;running=false;display.textContent='00:00:00.00';btnStart.textContent='START'}
+btnSW.onclick=()=>{mode='sw';btnSW.classList.add('on');btnTM.classList.remove('on');input.style.display='none';resetAll()};
+btnTM.onclick=()=>{mode='tm';btnTM.classList.add('on');btnSW.classList.remove('on');input.style.display='flex';resetAll()};
+btnStart.onclick=()=>{
+  if(running){clearInterval(interval);if(mode==='sw')elapsed+=performance.now()-start;running=false;btnStart.textContent='START';return}
+  if(mode==='tm'&&!remaining){const h=parseInt(hh.value)||0;const m=parseInt(mm.value)||0;const s=parseInt(ss.value)||0;remaining=(h*3600+m*60+s)*1000}
+  start=performance.now();running=true;btnStart.textContent='STOP';
+  interval=setInterval(()=>{if(mode==='sw'){display.textContent=format(elapsed+(performance.now()-start))}else{const left=remaining-(performance.now()-start);display.textContent=format(left);if(left<=0){clearInterval(interval);running=false;btnStart.textContent='START'}}},10);
+};
+btnReset.onclick=resetAll;
+
+/* ═══════════════════════════════════════════
+   MODAL LOGIC
+═══════════════════════════════════════════ */
+const modal=$('outputModal');
+const modalBox=$('modalBox');
+const modalPre=$('modalPre');
+const modalStamp=$('modalStamp');
+const modalBadge=$('modalBadge');
+const modalCloseBtn=$('modalCloseBtn');
+const modalCopyBtn=$('modalCopyBtn');
+const modalClearBtn=$('modalClearBtn');
+const panelLabels={p1:'Technical',p2:'Non-Tech',p3:'Recon',p4:'Follow Up',p5:'Rebate'};
+const clearFns={p1:()=>document.getElementById('clear1').click(),p2:()=>document.getElementById('clear2').click(),p3:()=>document.getElementById('clear3').click(),p4:()=>document.getElementById('clear4').click(),p5:()=>document.getElementById('clear5').click()};
+let currentExpandPanel=null;
+
+function openModal(panelId){
+  currentExpandPanel=panelId;
+  const outId=`out${panelId.replace('p','')}`;const stampId=`stamp${panelId.replace('p','')}`;
+  const pre=$(outId);const txt=pre.textContent||'';const isEmpty=pre.classList.contains('ph');
+  modalBadge.textContent=panelLabels[panelId]||'Note';
+  modalPre.textContent=isEmpty?'':txt;modalPre.classList.toggle('ph',isEmpty);
+  if(isEmpty){modalPre.textContent='Generate a note first, then expand to view it here.';modalPre.classList.add('ph')}
+  modalStamp.textContent=$(stampId)?.textContent||'';
+  modal.classList.add('open');document.body.style.overflow='hidden';
+  if(!isEmpty)setTimeout(()=>modalPre.focus(),350);
+}
+function closeModal(){
+  if(currentExpandPanel){const outId=`out${currentExpandPanel.replace('p','')}`;const pre=$(outId);const mtxt=modalPre.textContent||'';if(!modalPre.classList.contains('ph')&&mtxt.trim()){pre.textContent=mtxt;pre.classList.remove('ph');pre.contentEditable=true;pre.classList.add('editable')}}
+  modal.classList.remove('open');document.body.style.overflow='';currentExpandPanel=null;
+}
+document.querySelectorAll('.btn-expand').forEach(btn=>{btn.addEventListener('click',e=>{e.preventDefault();openModal(btn.getAttribute('data-panel'))})});
+modalCloseBtn.addEventListener('click',closeModal);
+modal.addEventListener('click',e=>{if(e.target===modal){modalBox.classList.remove('shake');void modalBox.offsetWidth;modalBox.classList.add('shake');setTimeout(()=>modalBox.classList.remove('shake'),500)}});
+modalCopyBtn.addEventListener('click',()=>{
+  const txt=modalPre.textContent||'';if(!txt.trim()||modalPre.classList.contains('ph'))return alert('Nothing to copy yet.');
+  navigator.clipboard.writeText(txt).then(()=>{const old=modalCopyBtn.innerHTML;modalCopyBtn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> COPIED!';modalCopyBtn.classList.add('copied');setTimeout(()=>{modalCopyBtn.innerHTML=old;modalCopyBtn.classList.remove('copied')},1800)}).catch(()=>{const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove()});
+});
+modalClearBtn.addEventListener('click',()=>{if(currentExpandPanel&&clearFns[currentExpandPanel]){clearFns[currentExpandPanel]();setTimeout(()=>{const outId=`out${currentExpandPanel.replace('p','')}`;const pre=$(outId);if(pre.classList.contains('ph')){modalPre.textContent='Generate a note first, then expand to view it here.';modalPre.classList.add('ph');modalStamp.textContent='';closeModal()}},100)}});
+
+/* ═══════════════════════════════════════════
+   KEYBOARD SHORTCUTS
+═══════════════════════════════════════════ */
+document.addEventListener('keydown',e=>{
+  if(e.ctrlKey&&(e.key==='g'||e.key==='G')){e.preventDefault();const id=activePid();const n=id?id.replace('p',''):null;if(n&&n>='1'&&n<='5'){if(checkUpsell(n))genActive()}else genActive()}
+  if(e.ctrlKey&&(e.key==='e'||e.key==='E')){e.preventDefault();if(!modal.classList.contains('open')){const pid=activePid();if(pid)openModal(pid)}}
+  if(e.ctrlKey&&e.shiftKey&&(e.key==='c'||e.key==='C')){const pid=activePid();const n=pid?pid.replace('p',''):null;if(n&&n>='1'&&n<='5'){e.preventDefault();const pre=$('out'+n);copyText(pre.textContent,$('stamp'+n))}}
+  if(e.ctrlKey&&!e.shiftKey&&e.key>='1'&&e.key<='8'){e.preventDefault();switchPanel('p'+e.key)}
+  if(e.key==='F11'){e.preventDefault();document.body.classList.toggle('focus-mode')}
+  if(e.key==='Escape'){
+    if($('kbModal').classList.contains('open')){$('kbModal').classList.remove('open');return}
+    if(modal.classList.contains('open')){closeModal();return}
+    if(document.body.classList.contains('focus-mode')){document.body.classList.remove('focus-mode');return}
+  }
+});
+
+$('kbFloatBtn').addEventListener('click',()=>$('kbModal').classList.toggle('open'));
+$('kbModal').addEventListener('click',e=>{if(e.target===$('kbModal'))$('kbModal').classList.remove('open')});
+$('focusModeBtn').addEventListener('click',()=>document.body.classList.toggle('focus-mode'));
+$('focusExitBtn').addEventListener('click',()=>document.body.classList.remove('focus-mode'));
+if($('sbEndShiftBtn')) $('sbEndShiftBtn').addEventListener('click',handleEndShift);
+if($('p7EndShiftBtn')) $('p7EndShiftBtn').addEventListener('click',handleEndShift);
+updateCallCounterUI();
+</script>
+</body>
+</html>
