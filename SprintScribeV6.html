@@ -209,6 +209,21 @@ body.sb-hidden .sb{width:0;padding:12px 0 20px;opacity:0;pointer-events:none}
 }
 .ss-item strong{color:var(--accent);font-family:var(--mono);font-size:.82rem}
 
+.shift-edit-card{
+  display:flex;flex-direction:column;gap:14px;padding:16px;border-radius:12px;
+  background:var(--card);border:1px solid var(--border);
+}
+.shift-edit-title{
+  font-family:var(--font-head);font-size:.82rem;letter-spacing:2px;text-transform:uppercase;color:var(--accent);
+}
+.shift-edit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.shift-edit-field{
+  display:flex;flex-direction:column;gap:6px;font-size:.66rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);
+}
+.shift-edit-field input{min-height:44px;font-size:14px;font-weight:700;padding:10px 12px}
+.shift-edit-actions{display:flex;flex-wrap:wrap;gap:8px}
+.shift-edit-actions .btn-ghost{flex:1;min-width:180px}
+
 /* BROWSE NOTES - BIGGER, WIDER, DISTINCT */
 .sb-label{
   font-size:.68rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;
@@ -687,6 +702,7 @@ body.focus-mode .focus-exit{display:flex}
     <div class="kb-row"><span class="kb-row-label">Notepad</span><div class="kb-row-keys"><span class="kb-key">Ctrl</span><span class="kb-key">6</span></div></div>
     <div class="kb-row"><span class="kb-row-label">Quick Snippets</span><div class="kb-row-keys"><span class="kb-key">Ctrl</span><span class="kb-key">8</span></div></div>
     <div class="kb-row"><span class="kb-row-label">History</span><div class="kb-row-keys"><span class="kb-key">Ctrl</span><span class="kb-key">7</span></div></div>
+    <div class="kb-row"><span class="kb-row-label">End Shift</span><div class="kb-row-keys"><span class="kb-key">Ctrl</span><span class="kb-key">9</span></div></div>
     <div class="kb-row"><span class="kb-row-label">Focus Mode</span><div class="kb-row-keys"><span class="kb-key">F11</span></div></div>
     <div class="kb-row"><span class="kb-row-label">Close Modal / Exit</span><div class="kb-row-keys"><span class="kb-key">Esc</span></div></div>
     <div style="text-align:center;margin-top:14px"><button class="btn-ghost" onclick="document.getElementById('kbModal').classList.remove('open')">Close</button></div>
@@ -860,7 +876,7 @@ body.focus-mode .focus-exit{display:flex}
             <textarea id="remarks1" class="wide-remarks"></textarea>
             <span class="field-hint">Enter: Jump next field · Shift+Enter: New line</span>
           </div>
-          <div class="c12 fld"><label class="flbl">WOCAS</label><input id="wocas1b" type="text" class="wide-wocas"/></div>
+          <div class="c12 fld"><label class="flbl">WOCAS</label><textarea id="wocas1b" class="wide-wocas"></textarea></div>
         </div></div>
         <div class="op" id="op1">
           <div class="op-hdr"><span class="op-hdr-t">Generated Output</span><button class="btn-expand" data-panel="p1" id="expand1" title="Expand output"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>EXPAND</button></div>
@@ -1142,23 +1158,47 @@ body.focus-mode .focus-exit{display:flex}
       </div>
     </section>
 
-    <!-- ══ P7: HISTORY & CALLS ══ -->
+    <!-- ══ P7: NOTE HISTORY ══ -->
     <section id="p7" class="panel">
       <div class="ptop">
-        <div class="ptop-left"><span class="ptop-title">NOTE HISTORY &amp; CALLS</span><span class="ptop-badge">Shift Log</span></div>
-        <button class="btn-gen" id="p7EndShiftBtn" style="font-size:.78rem;padding:6px 14px;letter-spacing:1px;background:#c4000d">🏁 END SHIFT &amp; RESET</button>
+        <div class="ptop-left"><span class="ptop-title">NOTE HISTORY</span><span class="ptop-badge">Auto-Logged</span></div>
+        <button class="btn-ghost" id="historyClearBtn" style="padding:6px 12px;letter-spacing:1px">CLEAR HISTORY</button>
       </div>
-      <div class="shift-stats-bar">
-        <div class="ss-item"><span>Calls Today:</span><strong id="shiftTotalCalls">0</strong></div>
-        <div class="ss-item"><span>Tech:</span><strong id="shiftTechCalls">0</strong></div>
-        <div class="ss-item"><span>Non-Tech:</span><strong id="shiftNonTechCalls">0</strong></div>
-        <div class="ss-item"><span>Recon:</span><strong id="shiftReconCalls">0</strong></div>
-        <div class="ss-item"><span>Follow-Up:</span><strong id="shiftFollowUpCalls">0</strong></div>
-        <div class="ss-item"><span>Rebate:</span><strong id="shiftRebateCalls">0</strong></div>
-      </div>
-      <div style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+      <div style="display:flex;flex-direction:column;flex:1;overflow:hidden;padding:16px 20px 20px;gap:10px">
         <div class="history-search"><input type="text" id="historySearch" placeholder="🔍 Search past notes by keyword, case#, or type…"/></div>
         <div class="history-list" id="historyList"></div>
+      </div>
+    </section>
+
+    <!-- ══ P9: END SHIFT ══ -->
+    <section id="p9" class="panel">
+      <div class="ptop">
+        <div class="ptop-left"><span class="ptop-title">END SHIFT</span><span class="ptop-badge">Editable Counts</span></div>
+        <button class="btn-gen" id="p9EndShiftBtn" style="font-size:.78rem;padding:6px 14px;letter-spacing:1px;background:#c4000d">🏁 END SHIFT &amp; RESET</button>
+      </div>
+      <div style="display:flex;flex-direction:column;flex:1;overflow:auto;padding:16px 20px 20px;gap:14px">
+        <div class="shift-stats-bar" style="border-radius:12px;border:1px solid var(--border)">
+          <div class="ss-item"><span>Calls Received:</span><strong id="shiftTotalCalls">0</strong></div>
+          <div class="ss-item"><span>Tech:</span><strong id="shiftTechCalls">0</strong></div>
+          <div class="ss-item"><span>Non-Tech:</span><strong id="shiftNonTechCalls">0</strong></div>
+          <div class="ss-item"><span>Recon:</span><strong id="shiftReconCalls">0</strong></div>
+          <div class="ss-item"><span>Follow-Up:</span><strong id="shiftFollowUpCalls">0</strong></div>
+          <div class="ss-item"><span>Rebate:</span><strong id="shiftRebateCalls">0</strong></div>
+        </div>
+        <div class="shift-edit-card">
+          <div class="shift-edit-title">Editable Call Breakdown</div>
+          <div class="shift-edit-grid">
+            <label class="shift-edit-field"><span>Tech</span><input type="number" id="shiftTechInput" min="0" step="1"/></label>
+            <label class="shift-edit-field"><span>Non-Tech</span><input type="number" id="shiftNonTechInput" min="0" step="1"/></label>
+            <label class="shift-edit-field"><span>Recon</span><input type="number" id="shiftReconInput" min="0" step="1"/></label>
+            <label class="shift-edit-field"><span>Follow-Up</span><input type="number" id="shiftFollowUpInput" min="0" step="1"/></label>
+            <label class="shift-edit-field"><span>Rebate</span><input type="number" id="shiftRebateInput" min="0" step="1"/></label>
+          </div>
+          <div class="shift-edit-actions">
+            <button class="btn-ghost" id="shiftResetBtn">Reset Counts</button>
+            <button class="btn-ghost" id="shiftSyncBtn">Sync From Saved Counts</button>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -1193,7 +1233,8 @@ const panels={
   p5:document.getElementById('p5'),
   p6:document.getElementById('p6'),
   p7:document.getElementById('p7'),
-  p8:document.getElementById('p8')
+  p8:document.getElementById('p8'),
+  p9:document.getElementById('p9')
 };
 let lastPanelBeforeNotepad='p1';
 function currentGeneratedOutputText(){
@@ -1476,10 +1517,29 @@ function getCallCounts(){
   const k='SS6_callCounts_'+todayKey();
   return JSON.parse(localStorage.getItem(k)||'{"Tech":0,"NonTech":0,"Recon":0,"FollowUp":0,"Rebate":0}');
 }
-function saveCallCounts(c){localStorage.setItem('SS6_callCounts_'+todayKey(),JSON.stringify(c))}
+function normalizeCallCounts(c){
+  const base={Tech:0,NonTech:0,Recon:0,FollowUp:0,Rebate:0};
+  Object.keys(base).forEach(key=>{base[key]=Math.max(0,Number.parseInt(c?.[key],10)||0)});
+  return base;
+}
+function saveCallCounts(c){localStorage.setItem('SS6_callCounts_'+todayKey(),JSON.stringify(normalizeCallCounts(c)))}
+
+function syncShiftEditorInputs(c){
+  const fields={
+    Tech:'shiftTechInput',
+    NonTech:'shiftNonTechInput',
+    Recon:'shiftReconInput',
+    FollowUp:'shiftFollowUpInput',
+    Rebate:'shiftRebateInput'
+  };
+  Object.entries(fields).forEach(([key,id])=>{
+    const input=$(id);
+    if(input&&document.activeElement!==input) input.value=c[key];
+  });
+}
 
 function updateCallCounterUI(){
-  const c=getCallCounts();
+  const c=normalizeCallCounts(getCallCounts());
   const total=Object.values(c).reduce((a,b)=>a+b,0);
   if($('ccTotal')) $('ccTotal').textContent=total;
   if($('ccTech')) $('ccTech').textContent=c.Tech;
@@ -1494,10 +1554,11 @@ function updateCallCounterUI(){
   if($('shiftReconCalls')) $('shiftReconCalls').textContent=c.Recon;
   if($('shiftFollowUpCalls')) $('shiftFollowUpCalls').textContent=c.FollowUp;
   if($('shiftRebateCalls')) $('shiftRebateCalls').textContent=c.Rebate;
+  syncShiftEditorInputs(c);
 }
 
 function handleEndShift(){
-  const c=getCallCounts();
+  const c=normalizeCallCounts(getCallCounts());
   const total=Object.values(c).reduce((a,b)=>a+b,0);
   const msg=`End Shift & Reset Call Numbers?\n\nShift Summary:\n• Total Calls: ${total}\n• Tech Notes: ${c.Tech}\n• Non-Tech Notes: ${c.NonTech}\n• Reconnections: ${c.Recon}\n• Follow-Up Notes: ${c.FollowUp}\n• Rebates: ${c.Rebate}\n\nClick OK to reset the call numbers to 0 for your next shift.`;
   if(!confirm(msg)) return;
@@ -1508,8 +1569,36 @@ function handleEndShift(){
   alert(`🏁 Shift ended! Call numbers have been reset to 0.`);
 }
 
+function wireShiftEditor(){
+  const ids={
+    Tech:'shiftTechInput',
+    NonTech:'shiftNonTechInput',
+    Recon:'shiftReconInput',
+    FollowUp:'shiftFollowUpInput',
+    Rebate:'shiftRebateInput'
+  };
+  Object.entries(ids).forEach(([key,id])=>{
+    const input=$(id);
+    if(!input) return;
+    input.addEventListener('input',()=>{
+      const next=normalizeCallCounts(getCallCounts());
+      next[key]=Math.max(0,Number.parseInt(input.value,10)||0);
+      saveCallCounts(next);
+      updateCallCounterUI();
+    });
+    input.addEventListener('change',()=>{
+      const next=normalizeCallCounts(getCallCounts());
+      next[key]=Math.max(0,Number.parseInt(input.value,10)||0);
+      saveCallCounts(next);
+      updateCallCounterUI();
+    });
+  });
+  $('shiftResetBtn')?.addEventListener('click',()=>handleEndShift());
+  $('shiftSyncBtn')?.addEventListener('click',()=>updateCallCounterUI());
+}
+
 function incrementCallCount(type){
-  const c=getCallCounts();c[type]=(c[type]||0)+1;saveCallCounts(c);updateCallCounterUI();
+  const c=normalizeCallCounts(getCallCounts());c[type]=(c[type]||0)+1;saveCallCounts(c);updateCallCounterUI();
 }
 
 function addToHistory(type,text){
@@ -2029,6 +2118,11 @@ function renderHistory(filter=''){
 }
 $('historySearch').addEventListener('input',e=>renderHistory(e.target.value));
 renderHistory();
+$('historyClearBtn')?.addEventListener('click',()=>{
+  if(!confirm('Clear all note history? This cannot be undone.')) return;
+  localStorage.setItem('SS6_history','[]');
+  renderHistory();
+});
 
 /* ═══════════════════════════════════════════
    AUTO-FILL SPOKE TO
@@ -2123,7 +2217,7 @@ document.addEventListener('keydown',e=>{
   if(e.ctrlKey&&(e.key==='g'||e.key==='G')){e.preventDefault();const id=activePid();const n=id?id.replace('p',''):null;if(n&&n>='1'&&n<='5'){if(checkUpsell(n))genActive()}else genActive()}
   if(e.ctrlKey&&(e.key==='e'||e.key==='E')){e.preventDefault();if(!modal.classList.contains('open')){const pid=activePid();if(pid)openModal(pid)}}
   if(e.ctrlKey&&e.shiftKey&&(e.key==='c'||e.key==='C')){const pid=activePid();const n=pid?pid.replace('p',''):null;if(n&&n>='1'&&n<='5'){e.preventDefault();const pre=$('out'+n);copyText(pre.textContent,$('stamp'+n))}}
-  if(e.ctrlKey&&!e.shiftKey&&e.key>='1'&&e.key<='8'){e.preventDefault();switchPanel('p'+e.key)}
+  if(e.ctrlKey&&!e.shiftKey&&e.key>='1'&&e.key<='9'){e.preventDefault();switchPanel('p'+e.key)}
   if(e.key==='F11'){e.preventDefault();document.body.classList.toggle('focus-mode')}
   if(e.key==='Escape'){
     if($('kbModal').classList.contains('open')){$('kbModal').classList.remove('open');return}
@@ -2136,8 +2230,8 @@ $('kbFloatBtn').addEventListener('click',()=>$('kbModal').classList.toggle('open
 $('kbModal').addEventListener('click',e=>{if(e.target===$('kbModal'))$('kbModal').classList.remove('open')});
 $('focusModeBtn').addEventListener('click',()=>document.body.classList.toggle('focus-mode'));
 $('focusExitBtn').addEventListener('click',()=>document.body.classList.remove('focus-mode'));
-if($('sbEndShiftBtn')) $('sbEndShiftBtn').addEventListener('click',handleEndShift);
-if($('p7EndShiftBtn')) $('p7EndShiftBtn').addEventListener('click',handleEndShift);
+wireShiftEditor();
+if($('p9EndShiftBtn')) $('p9EndShiftBtn').addEventListener('click',handleEndShift);
 updateCallCounterUI();
 </script>
 </body>
